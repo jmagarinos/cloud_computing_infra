@@ -6,8 +6,9 @@ provider "aws" {
 }
 
 # -----------------------------
-# S3 Bucket
+# S3 Buckets
 # -----------------------------
+
 resource "aws_s3_bucket" "website" {
   bucket        = "tp-static-website-lunchbox"
   force_destroy = true
@@ -23,6 +24,17 @@ resource "aws_s3_bucket_public_access_block" "website_block" {
   block_public_policy     = false
   ignore_public_acls      = false
   restrict_public_buckets = false
+
+resource "aws_s3_bucket_website_configuration" "website_config" {
+  bucket = aws_s3_bucket.website.id
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "error.html"
+  }
 }
 
 resource "aws_s3_bucket_ownership_controls" "website_ownership" {
@@ -94,4 +106,11 @@ resource "aws_s3_object" "error" {
 output "website_url" {
   value       = "http://${aws_s3_bucket.website.bucket}.s3-website-${var.aws_region}.amazonaws.com"
   description = "URL del sitio web estático en S3"
+resource "aws_s3_bucket_public_access_block" "website_block" {
+  bucket = aws_s3_bucket.website.id
+
+  block_public_acls       = false
+  block_public_policy     = false
+  ignore_public_acls      = false
+  restrict_public_buckets = false
 }
