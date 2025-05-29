@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Publicar Vianda</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 p-8">
+    <div class="container max-w-2xl mx-auto bg-white shadow-md rounded-lg p-6">
+        <h1 class="text-2xl font-semibold text-blue-600 mb-4 text-center">Publicar Vianda</h1>
+        <div class="mb-4">
+            <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Descripción:</label>
+            <textarea id="description"
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                rows="4" placeholder="Ingrese la descripción de la vianda"></textarea>
+        </div>
+        <button id="publishButton"
+            class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4 w-full">Publicar
+            Vianda</button>
+
+        <h2 class="text-xl font-semibold text-gray-800 mb-3">Viandas Publicadas:</h2>
+        <ul id="viandasList" class="space-y-3">
+        </ul>
+    </div>
+
+    <script>
+        const publishButton = document.getElementById('publishButton');
+        const descriptionInput = document.getElementById('description');
+        const viandasList = document.getElementById('viandasList');
+
+        async function loadViandas() {
+            try {
+                const response = await fetch('http://52.55.238.156:80/viandas');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const viandas = await response.json();
+                viandasList.innerHTML = ''; // Clear existing list
+                viandas.forEach(vianda => {
+                    const listItem = document.createElement('li');
+                    listItem.classList.add('bg-gray-50', 'border-l-4', 'border-green-400', 'text-gray-700', 'p-4', 'rounded-md', 'shadow-sm');
+                    listItem.textContent = vianda.descripcion;
+                    viandasList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error("Error loading viandas:", error);
+                viandasList.innerHTML = `<li class="text-red-500">Error al cargar las viandas: ${error.message}</li>`;
+            }
+        }
+
+        publishButton.addEventListener('click', async () => {
+            const description = descriptionInput.value.trim();
+
+            if (description === "") {
+                alert('Por favor, ingrese una descripción para la vianda.');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://52.55.238.156:80/viandas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ descripcion: description }),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                descriptionInput.value = ''; // Clear the input
+                loadViandas(); // Reload the list to show the new vianda
+                alert('Vianda publicada con éxito!');
+
+            } catch (error) {
+                console.error("Error publishing vianda:", error);
+                alert('Error al publicar la vianda. Por favor, inténtelo de nuevo.');
+            }
+        });
+
+        loadViandas(); // Load viandas on page load
+
+    </script>
+</body>
+
+</html>
