@@ -1,11 +1,4 @@
 # -----------------------------
-# Provider Configuration
-# -----------------------------
-provider "aws" {
-  region = var.aws_region
-}
-
-# -----------------------------
 # S3 Bucket
 # -----------------------------
 resource "aws_s3_bucket" "website" {
@@ -42,6 +35,8 @@ resource "aws_s3_bucket_acl" "website_acl" {
 resource "aws_s3_bucket_policy" "website_policy" {
   bucket = aws_s3_bucket.website.id
 
+  depends_on = [aws_s3_bucket_public_access_block.website_block]
+
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -55,6 +50,7 @@ resource "aws_s3_bucket_policy" "website_policy" {
     ]
   })
 }
+
 
 # -----------------------------
 # Website Hosting Configuration
@@ -86,12 +82,4 @@ resource "aws_s3_object" "error" {
   key          = "error.html"
   source       = "${path.module}/resources/error.html"
   content_type = "text/html"
-}
-
-# -----------------------------
-# Output: Website URL
-# -----------------------------
-output "website_url" {
-  value       = "http://${aws_s3_bucket.website.bucket}.s3-website-${var.aws_region}.amazonaws.com"
-  description = "URL del sitio web estático en S3"
 }
