@@ -13,3 +13,36 @@ variable "project_name" {
   description = "Nombre base para los recursos"
   type        = string
 }
+
+variable "db_username" {
+  description = "Master username for RDS"
+  default     = "postgres_user"
+}
+
+variable "db_password" {
+  description = "Master password for RDS"
+  sensitive   = true
+}
+
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
+  default     = "10.0.0.0/16"
+}
+
+variable "private_subnet_cidr" {
+  description = "CIDR block for the private subnet"
+  default     = "10.0.1.0/24"
+}
+
+variable "availability_zone" {
+  description = "AZ to launch resources in"
+  default     = "us-east-1a"
+}
+
+variable "allowed_ingress_cidr" {
+  description = "CIDR allowed to access RDS"
+  default     = "0.0.0.0/0"
+}
+
+
+
