@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Publicar Vianda</title>
+    <title>LunchBox - Viandas Deliciosas</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,28 +16,68 @@
     </style>
 </head>
 
-<body class="bg-gray-100 p-8">
-    <div class="container max-w-2xl mx-auto bg-white shadow-md rounded-lg p-6">
-        <h1 class="text-2xl font-semibold text-blue-600 mb-4 text-center">Publicar Vianda</h1>
-        <div class="mb-4">
-            <label for="description" class="block text-gray-700 text-sm font-bold mb-2">Descripción:</label>
-            <textarea id="description"
-                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                rows="4" placeholder="Ingrese la descripción de la vianda"></textarea>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <h1 class="text-3xl font-bold text-blue-600">LunchBox</h1>
+                <a href="login.html" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
+                    Iniciar Sesión
+                </a>
+            </div>
         </div>
-        <button id="publishButton"
-            class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mb-4 w-full">Publicar
-            Vianda</button>
+    </header>
 
-        <h2 class="text-xl font-semibold text-gray-800 mb-3">Viandas Publicadas:</h2>
-        <ul id="viandasList" class="space-y-3">
-        </ul>
+    <!-- Search Section -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-xl mx-auto mb-12">
+            <div class="relative">
+                <input type="text" id="search" 
+                    class="w-full px-4 py-3 rounded-lg shadow-sm border border-gray-300 focus:outline-none focus:border-blue-500"
+                    placeholder="Buscar viandas...">
+                <button class="absolute right-3 top-3">
+                    <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Viandas Grid -->
+        <div id="viandasGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Cards will be inserted here dynamically -->
+        </div>
     </div>
 
     <script>
-        const publishButton = document.getElementById('publishButton');
-        const descriptionInput = document.getElementById('description');
-        const viandasList = document.getElementById('viandasList');
+        const searchInput = document.getElementById('search');
+        const viandasGrid = document.getElementById('viandasGrid');
+
+        // Sample data structure for viandas (you'll need to modify your backend to support this)
+        const sampleViandas = [
+            {
+                id: 1,
+                titulo: "Pollo al Curry",
+                imagen: "https://placehold.co/300x200",
+                descripcion: "Delicioso pollo al curry con arroz basmati",
+                precio: 12.99
+            },
+            // More viandas will be added here from the backend
+        ];
+
+        function createViandaCard(vianda) {
+            return `
+                <div class="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition-transform hover:scale-105"
+                     onclick="window.location.href='vianda-detail.html?id=${vianda.id}'">
+                    <img src="${vianda.imagen}" alt="${vianda.titulo}" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h3 class="text-lg font-semibold text-gray-800">${vianda.titulo}</h3>
+                    </div>
+                </div>
+            `;
+        }
 
         async function loadViandas() {
             try {
@@ -46,52 +86,42 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const viandas = await response.json();
-                viandasList.innerHTML = ''; // Clear existing list
-                viandas.forEach(vianda => {
-                    const listItem = document.createElement('li');
-                    listItem.classList.add('bg-gray-50', 'border-l-4', 'border-green-400', 'text-gray-700', 'p-4', 'rounded-md', 'shadow-sm');
-                    listItem.textContent = vianda.descripcion;
-                    viandasList.appendChild(listItem);
-                });
+                
+                // Transform the viandas data to include sample images and titles
+                const transformedViandas = viandas.map((vianda, index) => ({
+                    id: index + 1,
+                    titulo: vianda.descripcion.split('.')[0], // Use first sentence as title
+                    imagen: `https://placehold.co/300x200?text=Vianda+${index + 1}`,
+                    descripcion: vianda.descripcion,
+                    precio: (Math.random() * 20 + 10).toFixed(2) // Random price between 10 and 30
+                }));
+
+                viandasGrid.innerHTML = transformedViandas
+                    .slice(0, 16) // Limit to 16 cards
+                    .map(vianda => createViandaCard(vianda))
+                    .join('');
             } catch (error) {
                 console.error("Error loading viandas:", error);
-                viandasList.innerHTML = `<li class="text-red-500">Error al cargar las viandas: ${error.message}</li>`;
+                viandasGrid.innerHTML = `<div class="col-span-full text-center text-red-500">Error al cargar las viandas: ${error.message}</div>`;
             }
         }
 
-        publishButton.addEventListener('click', async () => {
-            const description = descriptionInput.value.trim();
-
-            if (description === "") {
-                alert('Por favor, ingrese una descripción para la vianda.');
-                return;
-            }
-
-            try {
-                const response = await fetch('http://52.55.238.156:80/viandas', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ descripcion: description }),
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+        // Search functionality
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = viandasGrid.children;
+            
+            Array.from(cards).forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                if (title.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
                 }
-
-                descriptionInput.value = ''; // Clear the input
-                loadViandas(); // Reload the list to show the new vianda
-                alert('Vianda publicada con éxito!');
-
-            } catch (error) {
-                console.error("Error publishing vianda:", error);
-                alert('Error al publicar la vianda. Por favor, inténtelo de nuevo.');
-            }
+            });
         });
 
         loadViandas(); // Load viandas on page load
-
     </script>
 </body>
 

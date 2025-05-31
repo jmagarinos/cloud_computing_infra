@@ -3,37 +3,27 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Error - Página no encontrada</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LunchBox - Error</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            background-color: #f8f8f8;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 100px;
-        }
-
-        h1 {
-            font-size: 60px;
-            color: #e74c3c;
-        }
-
-        p {
-            font-size: 20px;
-            color: #555;
-        }
-
-        a {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: bold;
+            font-family: 'Inter', sans-serif;
         }
     </style>
 </head>
 
-<body>
-    <h1>404</h1>
-    <p>La página que estás buscando no existe.</p>
-    <p><a href="index.html">Volver al inicio</a></p>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+    <div class="text-center">
+        <h1 class="text-6xl font-bold text-blue-600 mb-4">404</h1>
+        <p class="text-xl text-gray-600 mb-8">Página no encontrada</p>
+        <a href="index.html" class="bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200">
+            Volver al inicio
+        </a>
+    </div>
 </body>
 
 </html>

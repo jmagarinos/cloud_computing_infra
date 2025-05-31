@@ -51,7 +51,6 @@ resource "aws_s3_bucket_policy" "website_policy" {
   })
 }
 
-
 # -----------------------------
 # Website Hosting Configuration
 # -----------------------------
@@ -75,6 +74,24 @@ resource "aws_s3_object" "index" {
   key          = "index.html"
   source       = "${path.module}/resources/index.html"
   content_type = "text/html"
+  etag         = filemd5("${path.module}/resources/index.html")
+}
+
+# TODO: Habría que hacer que esto sea dependiendo el id de cada vianda
+resource "aws_s3_object" "vianda_detail" {
+  bucket       = aws_s3_bucket.website.id
+  key          = "vianda-detail.html"
+  source       = "${path.module}/resources/vianda-detail.html"
+  content_type = "text/html"
+  etag         = filemd5("${path.module}/resources/vianda-detail.html")
+}
+
+resource "aws_s3_object" "login" {
+  bucket       = aws_s3_bucket.website.id
+  key          = "login.html"
+  source       = "${path.module}/resources/login.html"
+  content_type = "text/html"
+  etag         = filemd5("${path.module}/resources/login.html")
 }
 
 resource "aws_s3_object" "error" {
@@ -82,4 +99,5 @@ resource "aws_s3_object" "error" {
   key          = "error.html"
   source       = "${path.module}/resources/error.html"
   content_type = "text/html"
+  etag         = filemd5("${path.module}/resources/error.html")
 }
