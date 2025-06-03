@@ -12,7 +12,7 @@ resource "aws_lambda_function" "vianda_writer" {
     variables = {
       DB_HOST     = aws_db_instance.postgres.address
       DB_NAME     = "lunchbox"
-      DB_USER     = "lunchbox_user"
+      DB_USER     = var.db_username
       DB_PASSWORD = var.db_password
     }
   }
@@ -27,8 +27,6 @@ resource "aws_lambda_function" "vianda_writer" {
   layers = [aws_lambda_layer_version.psycopg2_layer.arn]
 
 }
-
-
 
 resource "aws_lambda_function" "vianda_buy" {
   function_name = "vianda-buy"
@@ -89,6 +87,9 @@ resource "aws_lambda_function" "vianda_delete" {
     subnet_ids         = [for subnet in aws_subnet.private : subnet.id]
     security_group_ids = [module.sg.security_group_id]
   }
+
+  layers = [aws_lambda_layer_version.psycopg2_layer.arn]
+
 }
 
 resource "aws_lambda_function" "vianda_list" {
@@ -135,7 +136,7 @@ resource "aws_lambda_function" "vianda_get" {
     variables = {
       DB_HOST     = aws_db_instance.postgres.address
       DB_NAME     = "lunchbox"
-      DB_USER     = "lunchbox_user"
+      DB_USER     = var.db_username
       DB_PASSWORD = var.db_password
     }
   }
