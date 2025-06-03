@@ -47,3 +47,7 @@ output "frontend_url" {
   description = "URL pública de tu frontend (S3 Static Website)"
   value       = "http://${aws_s3_bucket_website_configuration.website_config.website_endpoint}"
 }
+
+output "vianda_api_invoke_url" {
+  value = "${aws_api_gateway_deployment.vianda_api_deployment.invoke_url}/viandas"
+}
