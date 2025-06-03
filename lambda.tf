@@ -23,6 +23,9 @@ resource "aws_lambda_function" "vianda_writer" {
     subnet_ids         = [for subnet in aws_subnet.private : subnet.id]
     security_group_ids = [module.sg.security_group_id]
   }
+
+  layers = [aws_lambda_layer_version.psycopg2_layer.arn]
+
 }
 
 
