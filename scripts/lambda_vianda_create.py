@@ -5,7 +5,7 @@ from datetime import datetime
 import jwt
 from urllib.request import urlopen
 
-def get_cognito_user_id(event):
+def get_persona_id(event):
     try:
         # Obtener el token del header de autorización
         auth_header = event.get('headers', {}).get('Authorization')
@@ -35,22 +35,45 @@ def get_cognito_user_id(event):
         public_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
         payload = jwt.decode(token, public_key, algorithms=['RS256'])
         
-        return payload.get('sub')  # 'sub' es el ID único del usuario en Cognito
+        # Obtener el email del token
+        email = payload.get('email')
+        if not email:
+            raise Exception("No se encontró el email en el token")
+            
+        # Conectar a la base de datos
+        conn = psycopg2.connect(
+            host=os.environ['DB_HOST'],
+            database=os.environ['DB_NAME'],
+            user=os.environ['DB_USER'],
+            password=os.environ['DB_PASSWORD'],
+            port=5432
+        )
+        
+        cur = conn.cursor()
+        
+        # Buscar el ID de la persona por email
+        cur.execute("SELECT id FROM persona WHERE mail = %s", (email,))
+        result = cur.fetchone()
+        
+        if not result:
+            raise Exception("No se encontró la persona con ese email")
+            
+        persona_id = result[0]
+        
+        cur.close()
+        conn.close()
+        
+        return persona_id
         
     except Exception as e:
-        print(f"Error al obtener el ID de usuario: {str(e)}")
+        print(f"Error al obtener el ID de persona: {str(e)}")
         return None
 
 def validate_vianda_data(data):
     required_fields = {
-        'nombre': str,
+        'titulo': str,
         'descripcion': str,
-        'precio': (int, float),
-        'categoria': str,
-        'ingredientes': list,
-        'calorias': int,
-        'tiempo_preparacion': int,
-        'disponible': bool
+        'precio': (int, float)
     }
     
     errors = []
@@ -64,19 +87,13 @@ def validate_vianda_data(data):
     if data.get('precio') is not None and data['precio'] <= 0:
         errors.append("El precio debe ser mayor que 0")
     
-    if data.get('calorias') is not None and data['calorias'] <= 0:
-        errors.append("Las calorías deben ser mayores que 0")
-    
-    if data.get('tiempo_preparacion') is not None and data['tiempo_preparacion'] <= 0:
-        errors.append("El tiempo de preparación debe ser mayor que 0")
-    
     return errors
 
 def lambda_handler(event, context):
     try:
-        # Verificar autenticación
-        user_id = get_cognito_user_id(event)
-        if not user_id:
+        # Verificar autenticación y obtener ID de persona
+        persona_id = get_persona_id(event)
+        if not persona_id:
             return {
                 'statusCode': 401,
                 'body': json.dumps({
@@ -111,36 +128,24 @@ def lambda_handler(event, context):
         cur = conn.cursor()
         
         # Preparar los datos para la inserción
-        fecha_creacion = datetime.now()
-        
         insert_query = """
-            INSERT INTO viandas (
-                nombre, 
+            INSERT INTO vianda (
+                titulo, 
                 descripcion, 
                 precio, 
-                categoria, 
-                ingredientes, 
-                calorias, 
-                tiempo_preparacion, 
-                disponible,
-                fecha_creacion,
-                creador_id
+                imagen,
+                fk_dueno
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s)
             RETURNING id;
         """
         
         cur.execute(insert_query, (
-            body['nombre'],
+            body['titulo'],
             body['descripcion'],
             body['precio'],
-            body['categoria'],
-            body['ingredientes'],
-            body['calorias'],
-            body['tiempo_preparacion'],
-            body['disponible'],
-            fecha_creacion,
-            user_id  # Usamos el ID del usuario de Cognito
+            body.get('imagen'),
+            persona_id  # Usamos el ID de la persona
         ))
         
         vianda_id = cur.fetchone()[0]
@@ -153,9 +158,7 @@ def lambda_handler(event, context):
             'statusCode': 200,
             'body': json.dumps({
                 'message': 'Vianda creada correctamente',
-                'id': vianda_id,
-                'fecha_creacion': fecha_creacion.isoformat(),
-                'creador_id': user_id
+                'id': vianda_id
             })
         }
         

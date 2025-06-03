@@ -152,6 +152,11 @@ resource "aws_s3_object" "config_js" {
       userPoolId: "${aws_cognito_user_pool.main.id}",
       clientId: "${aws_cognito_user_pool_client.web_client.id}"
     };
+
+    // Configuración de la API
+    const apiConfig = {
+      apiUrl: "${aws_api_gateway_deployment.vianda_api_deployment.invoke_url}"
+    };
   EOF
   content_type = "application/javascript"
 }
