@@ -87,26 +87,50 @@
         </div>
     </div>
 
+    <!-- Aquí agregamos la librería de Cognito + el script de login -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.0.1/dist/amazon-cognito-identity.min.js"></script>
     <script>
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const remember = document.getElementById('remember').checked;
 
-            try {
-                // Aquí iría la llamada a tu API de autenticación
-                // Por ahora solo mostraremos un mensaje de éxito
-                console.log('Datos de login:', { email, password, remember });
-                alert('Inicio de sesión exitoso');
-                window.location.href = 'index.html'; // Redirigir al inicio después del login
-            } catch (error) {
-                console.error('Error en el login:', error);
-                alert('Error al iniciar sesión. Por favor, intenta nuevamente.');
-            }
+            const poolData = {
+                UserPoolId: 'us-east-1_7yDaMtz7a',  // <--- REEMPLAZAR con output cognito_user_pool_id
+                ClientId: '5lmk2ik90bj3lcb9ghpu1k138q' // <--- REEMPLAZAR con output cognito_user_pool_client_id
+            };
+
+            const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+            const user = new AmazonCognitoIdentity.CognitoUser({
+                Username: email,
+                Pool: userPool
+            });
+
+            const authDetails = new AmazonCognitoIdentity.AuthenticationDetails({
+                Username: email,
+                Password: password
+            });
+
+            user.authenticateUser(authDetails, {
+                onSuccess: function (result) {
+                    console.log('Login successful');
+                    console.log('Access token:', result.getAccessToken().getJwtToken());
+                    // Guardás el token en localStorage:
+                    localStorage.setItem('access_token', result.getAccessToken().getJwtToken());
+                    alert('Inicio de sesión exitoso');
+                    window.location.href = 'index.html';
+                },
+                onFailure: function (err) {
+                    console.error('Login failed:', err);
+                    alert('Error al iniciar sesión: ' + (err.message || JSON.stringify(err)));
+                }
+            });
         });
     </script>
+
 </body>
 
-</html> 
+</html>

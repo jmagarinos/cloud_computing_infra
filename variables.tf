@@ -73,3 +73,14 @@ variable "private_subnet_cidrs" {
   description = "Map of AZs to private subnet CIDRs"
   type        = map(string)
 }
+
+variable "cognito_callback_url" {
+  description = "Callback URL for Cognito Hosted UI"
+  type        = string
+}
+
+variable "cognito_logout_url" {
+  description = "Logout URL"
+  type        = string
+}
+

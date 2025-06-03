@@ -25,3 +25,20 @@ output "rds_security_group_id" {
 output "website_bucket_name" {
   value = aws_s3_bucket.website.bucket
 }
+
+output "cognito_user_pool_id" {
+  value = aws_cognito_user_pool.main.id
+}
+
+output "cognito_user_pool_client_id" {
+  value = aws_cognito_user_pool_client.web_client.id
+}
+
+output "cognito_hosted_ui_url" {
+  value = format("https://%s.auth.%s.amazoncognito.com/login?client_id=%s&response_type=code&scope=email+openid+profile&redirect_uri=%s",
+    aws_cognito_user_pool_domain.main.domain,
+    var.aws_region,
+    aws_cognito_user_pool_client.web_client.id,
+    var.cognito_callback_url
+  )
+}
