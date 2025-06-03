@@ -7,6 +7,7 @@
     <title>Registro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
+    <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
 </head>
 
@@ -56,7 +57,7 @@
                         </label>
                         <input type="tel" id="telefono" name="telefono" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Tu número de teléfono">
+                            placeholder="+54123456789">
                     </div>
                     <div>
                         <label for="direccion" class="block text-sm font-medium text-gray-700 mb-2">
@@ -64,7 +65,7 @@
                         </label>
                         <input type="text" id="direccion" name="direccion" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="Tu dirección completa">
+                            placeholder="Tu dirección">
                     </div>
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
@@ -81,9 +82,6 @@
                         <input type="password" id="password" name="password" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="••••••••">
-                        <p class="mt-1 text-sm text-gray-500">
-                            Mínimo 8 caracteres, incluir mayúsculas y números
-                        </p>
                     </div>
                     <div>
                         <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">
@@ -115,7 +113,26 @@
     <!-- Aquí agregamos la librería de Cognito + el script de registro -->
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.0.1/dist/amazon-cognito-identity.min.js"></script>
     <script>
-        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        // Inicializar Cognito con los valores de configuración
+        console.log('Configuración de Cognito:', cognitoConfig);
+        if (!cognitoConfig || !cognitoConfig.userPoolId || !cognitoConfig.clientId) {
+            console.error('Error: La configuración de Cognito no está completa');
+            alert('Error: La configuración de Cognito no está completa. Por favor, recarga la página.');
+        } else {
+            initCognito(cognitoConfig.userPoolId, cognitoConfig.clientId);
+            console.log('UserPool después de inicialización:', userPool);
+        }
+
+        // Verificar que el formulario existe
+        const signupForm = document.getElementById('signupForm');
+        if (!signupForm) {
+            console.error('Error: No se encontró el formulario de registro');
+        } else {
+            console.log('Formulario de registro encontrado');
+        }
+
+        signupForm.addEventListener('submit', async (e) => {
+            console.log('Formulario enviado');
             e.preventDefault();
 
             const nombre = document.getElementById('nombre').value;
@@ -125,6 +142,8 @@
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
+
+            console.log('Datos del formulario:', { nombre, apellido, telefono, direccion, email });
 
             if (password !== confirmPassword) {
                 alert('Las contraseñas no coinciden');
@@ -137,13 +156,6 @@
                 alert('El número de teléfono debe incluir el código de país (ejemplo: +54123456789)');
                 return;
             }
-
-            const poolData = {
-                UserPoolId: 'us-east-1_JosgMkDGE',  // User Pool ID de Cognito
-                ClientId: '4femhf9urmn6vfu07k19jdod5a' // Client ID de Cognito
-            };
-
-            const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
 
             const attributeList = [
                 new AmazonCognitoIdentity.CognitoUserAttribute({
@@ -168,17 +180,26 @@
                 })
             ];
 
-            userPool.signUp(email, password, attributeList, null, (err, result) => {
-                if (err) {
-                    console.error('Error en el registro:', err);
-                    alert('Error al registrarse: ' + (err.message || JSON.stringify(err)));
-                    return;
-                }
+            console.log('Intentando registrar usuario con Cognito...');
+            console.log('UserPool:', userPool);
+            console.log('AttributeList:', attributeList);
 
-                console.log('Usuario registrado:', result);
-                alert('¡Registro exitoso! Por favor, verifica tu correo electrónico.');
-                window.location.href = 'confirm.html?email=' + encodeURIComponent(email);
-            });
+            try {
+                userPool.signUp(email, password, attributeList, null, (err, result) => {
+                    if (err) {
+                        console.error('Error en el registro:', err);
+                        alert('Error al registrarse: ' + (err.message || JSON.stringify(err)));
+                        return;
+                    }
+
+                    console.log('Usuario registrado:', result);
+                    alert('¡Registro exitoso! Por favor, verifica tu correo electrónico.');
+                    window.location.href = 'confirm.html?email=' + encodeURIComponent(email);
+                });
+            } catch (error) {
+                console.error('Error al intentar registrar:', error);
+                alert('Error al intentar registrar: ' + error.message);
+            }
         });
     </script>
 

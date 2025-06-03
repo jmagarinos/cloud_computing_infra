@@ -1,7 +1,7 @@
 resource "aws_lambda_function" "vianda_writer" {
   function_name = "vianda-writer"
 
-  role = "arn:aws:iam::891377282035:role/LabRole"
+  role = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
 
   runtime = "python3.12"
   handler = "lambda_function.lambda_handler"
@@ -24,3 +24,5 @@ resource "aws_lambda_function" "vianda_writer" {
     security_group_ids = [module.sg.security_group_id]
   }
 }
+
+data "aws_caller_identity" "current" {}

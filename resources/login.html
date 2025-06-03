@@ -7,6 +7,7 @@
     <title>Iniciar Sesión - Cloud Computing Infrastructure</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
+    <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
 </head>
 
@@ -83,21 +84,16 @@
     </div>
 
     <!-- Aquí agregamos la librería de Cognito + el script de login -->
-    <script
-        src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.0.1/dist/amazon-cognito-identity.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.0.1/dist/amazon-cognito-identity.min.js"></script>
     <script>
+        // Inicializar Cognito con los valores de configuración
+        initCognito(cognitoConfig.userPoolId, cognitoConfig.clientId);
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-
-            const poolData = {
-                UserPoolId: 'us-east-1_JosgMkDGE',  // User Pool ID de Cognito
-                ClientId: '4femhf9urmn6vfu07k19jdod5a' // Client ID de Cognito
-            };
-
-            const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
 
             const user = new AmazonCognitoIdentity.CognitoUser({
                 Username: email,
@@ -110,14 +106,13 @@
             });
 
             user.authenticateUser(authDetails, {
-                onSuccess: function (result) {
+                onSuccess: function(result) {
                     console.log('Login exitoso:', result);
-                    // Guardar el token de acceso
-                    localStorage.setItem('accessToken', result.getAccessToken().getJwtToken());
+                    localStorage.setItem('access_token', result.getAccessToken().getJwtToken());
                     window.location.href = 'index.html';
                 },
-                onFailure: function (err) {
-                    console.error('Error en login:', err);
+                onFailure: function(err) {
+                    console.error('Error en el login:', err);
                     const errorMessage = document.getElementById('errorMessage');
                     if (err.code === 'UserNotConfirmedException') {
                         errorMessage.textContent = 'Tu cuenta no está confirmada. Por favor, verifica tu correo electrónico y confirma tu cuenta.';

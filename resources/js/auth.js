@@ -1,21 +1,42 @@
-const poolData = {
-    UserPoolId: 'us-east-1_JosgMkDGE',  // User Pool ID de Cognito
-    ClientId: '4femhf9urmn6vfu07k19jdod5a' // Client ID de Cognito
+// Los valores de Cognito se cargarán dinámicamente desde Terraform
+let poolData = {
+    UserPoolId: '',  // Se llenará dinámicamente
+    ClientId: ''     // Se llenará dinámicamente
 };
 
-const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+let userPool = null;
+
+// Función para inicializar Cognito con los valores correctos
+function initCognito(userPoolId, clientId) {
+    console.log('Inicializando Cognito con:', { userPoolId, clientId });
+    if (!userPoolId || !clientId) {
+        console.error('Error: userPoolId o clientId no están definidos');
+        return;
+    }
+    poolData.UserPoolId = userPoolId;
+    poolData.ClientId = clientId;
+    userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+    console.log('UserPool inicializado:', userPool);
+}
 
 // Función para verificar si el usuario está autenticado
 function isAuthenticated() {
-    return localStorage.getItem('access_token') !== null;
+    const token = localStorage.getItem('access_token');
+    console.log('Token de acceso:', token ? 'Presente' : 'No presente');
+    return token !== null;
 }
 
 // Función para actualizar el header según el estado de autenticación
 function updateHeader() {
+    console.log('Actualizando header...');
     const headerRight = document.querySelector('.header-right');
-    if (!headerRight) return;
+    if (!headerRight) {
+        console.error('No se encontró el elemento header-right');
+        return;
+    }
 
     if (isAuthenticated()) {
+        console.log('Usuario autenticado, mostrando perfil');
         headerRight.innerHTML = `
             <a href="profile.html" class="flex items-center space-x-2 text-blue-600 hover:text-blue-800">
                 <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -37,6 +58,7 @@ function updateHeader() {
             });
         }
     } else {
+        console.log('Usuario no autenticado, mostrando botón de login');
         headerRight.innerHTML = `
             <a href="login.html" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
                 Iniciar Sesión
@@ -45,5 +67,14 @@ function updateHeader() {
     }
 }
 
-// Actualizar el header cuando se carga la página
-document.addEventListener('DOMContentLoaded', updateHeader); 
+// Inicializar Cognito cuando se carga la página
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM cargado, inicializando Cognito...');
+    if (typeof cognitoConfig !== 'undefined') {
+        console.log('Configuración de Cognito encontrada:', cognitoConfig);
+        initCognito(cognitoConfig.userPoolId, cognitoConfig.clientId);
+    } else {
+        console.error('cognitoConfig no está definido');
+    }
+    updateHeader();
+}); 

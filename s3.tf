@@ -136,9 +136,22 @@ resource "aws_s3_object" "profile" {
 }
 
 resource "aws_s3_object" "auth_js" {
-  bucket = aws_s3_bucket.website.id
-  key    = "js/auth.js"
-  source = "${path.module}/resources/js/auth.js"
-  etag   = filemd5("${path.module}/resources/js/auth.js")
+  bucket       = aws_s3_bucket.website.id
+  key          = "js/auth.js"
+  source       = "${path.module}/resources/js/auth.js"
+  etag         = filemd5("${path.module}/resources/js/auth.js")
+  content_type = "application/javascript"
+}
+
+resource "aws_s3_object" "config_js" {
+  bucket       = aws_s3_bucket.website.id
+  key          = "js/config.js"
+  content      = <<-EOF
+    // Configuración de Cognito
+    const cognitoConfig = {
+      userPoolId: "${aws_cognito_user_pool.main.id}",
+      clientId: "${aws_cognito_user_pool_client.web_client.id}"
+    };
+  EOF
   content_type = "application/javascript"
 }
