@@ -1,33 +1,22 @@
-resource "aws_subnet" "private_a" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.1.0/24"
-  availability_zone       = "us-east-1a"
+resource "aws_subnet" "private" {
+  for_each = var.private_subnet_cidrs
+
+  vpc_id                  = module.vpc.vpc_id
+  cidr_block              = each.value
+  availability_zone       = each.key
   map_public_ip_on_launch = false
 
   tags = {
-    Name = "private-subnet-a"
-  }
-}
-
-resource "aws_subnet" "private_b" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.2.0/24"
-  availability_zone       = "us-east-1b"
-  map_public_ip_on_launch = false
-
-  tags = {
-    Name = "private-subnet-b"
+    Name = format("private-subnet-%s-%s", each.key, var.environment)
   }
 }
 
 resource "aws_db_subnet_group" "rds" {
-  name = "rds-subnet-group"
-  subnet_ids = [
-    aws_subnet.private_a.id,
-    aws_subnet.private_b.id
-  ]
+  name = format("rds-subnet-group-%s", var.environment)
+
+  subnet_ids = [for subnet in aws_subnet.private : subnet.id]
 
   tags = {
-    Name = "rds-subnet-group"
+    Name = format("rds-subnet-group-%s", var.environment)
   }
 }

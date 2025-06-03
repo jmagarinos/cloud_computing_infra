@@ -2,9 +2,18 @@
 # S3 Bucket
 # -----------------------------
 resource "aws_s3_bucket" "website" {
-  bucket        = "tp-static-website-lunchbox"
-  force_destroy = true
+  bucket = lower(format("website-%s-%s", var.project_name, var.environment))
+
+  # lifecycle {
+  #   prevent_destroy = true
+  # }
+
+  tags = {
+    Name        = format("website-%s", var.environment)
+    Environment = var.environment
+  }
 }
+
 
 # -----------------------------
 # Public Access Configuration

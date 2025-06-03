@@ -7,21 +7,21 @@ output "website_url" {
 }
 
 output "rds_endpoint" {
-  value       = aws_db_instance.postgres.endpoint
-  description = "RDS PostgreSQL endpoint"
+  value = aws_db_instance.postgres.endpoint
 }
 
 output "private_subnet_ids" {
-  value       = [aws_subnet.private_a.id, aws_subnet.private_b.id]
-  description = "Private subnet IDs"
+  value = [for subnet in aws_subnet.private : subnet.id]
 }
 
 output "vpc_id" {
-  value       = aws_vpc.main.id
-  description = "VPC ID"
+  value = module.vpc.vpc_id
 }
 
 output "rds_security_group_id" {
-  value       = aws_security_group.rds_sg.id
-  description = "RDS Security Group ID"
+  value = module.sg.security_group_id
+}
+
+output "website_bucket_name" {
+  value = aws_s3_bucket.website.bucket
 }

@@ -39,11 +39,6 @@ variable "db_password" {
   sensitive   = true
 }
 
-variable "vpc_cidr" {
-  description = "CIDR block for the VPC"
-  default     = "10.0.0.0/16"
-}
-
 variable "private_subnet_cidr" {
   description = "CIDR block for the private subnet"
   default     = "10.0.1.0/24"
@@ -59,5 +54,22 @@ variable "allowed_ingress_cidr" {
   default     = "0.0.0.0/0"
 }
 
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
+  type        = string
+}
 
+variable "environment" {
+  description = "Environment (dev, test, prod)"
+  type        = string
+}
 
+variable "project_team" {
+  description = "Project team name"
+  type        = string
+}
+
+variable "private_subnet_cidrs" {
+  description = "Map of AZs to private subnet CIDRs"
+  type        = map(string)
+}
