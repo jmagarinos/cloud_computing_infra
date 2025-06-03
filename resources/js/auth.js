@@ -38,12 +38,17 @@ function updateHeader() {
     if (isAuthenticated()) {
         console.log('Usuario autenticado, mostrando perfil');
         headerRight.innerHTML = `
-            <a href="profile.html" class="flex items-center space-x-2 text-blue-600 hover:text-blue-800">
-                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span class="text-sm font-medium" id="headerInitials"></span>
-                </div>
-                <span class="font-medium">Mi Perfil</span>
-            </a>
+            <div class="flex items-center space-x-4">
+                <a href="write_vianda.html" class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-200">
+                    Crear Vianda
+                </a>
+                <a href="profile.html" class="flex items-center space-x-2 text-blue-600 hover:text-blue-800">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span class="text-sm font-medium" id="headerInitials"></span>
+                    </div>
+                    <span class="font-medium">Mi Perfil</span>
+                </a>
+            </div>
         `;
 
         // Obtener y mostrar las iniciales del usuario

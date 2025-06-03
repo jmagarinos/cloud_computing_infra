@@ -1,39 +1,204 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8">
-  <title>Gestión de Viandas</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Vianda - LunchBox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
 </head>
-<body>
-  <h1>Gestión de Viandas</h1>
 
-  <!-- Formulario para crear vianda -->
-  <h2>Crear Vianda</h2>
-  <form id="formCrearVianda">
-    <input type="text" id="nombre" placeholder="Nombre de la vianda" required>
-    <input type="text" id="descripcion" placeholder="Decripcion" required>
-    <input type="number" id="precio" placeholder="Precio" required>
-    <button type="submit">Crear</button>
-  </form>
+<body class="bg-gray-100">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <a href="index.html" class="text-3xl font-bold text-blue-600">LunchBox</a>
+                <div class="header-right">
+                    <!-- El contenido se actualizará dinámicamente con auth.js -->
+                </div>
+            </div>
+        </div>
+    </header>
 
-  <script>
-     const apiBase = "https://<API_ID>.execute-api.<REGION>.amazonaws.com/prod"; //todo : como hacer que sea dinámico en base al output?
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto">
+            <h1 class="text-3xl font-bold text-gray-800 mb-8">Crear Nueva Vianda</h1>
 
-    // Crear vianda
-    document.getElementById("formCrearVianda").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const nombre = document.getElementById("nombre").value;
-      const descripcion = document.getElementById("descripcion").value;
-      const precio = document.getElementById("precio").value;
-      
+            <form id="createViandaForm" class="bg-white shadow-md rounded-lg p-6">
+                <div class="mb-6">
+                    <label for="nombre" class="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                    <input type="text" id="nombre" name="nombre" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
 
-      const res = await fetch(`${apiBase}/viandas`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, descripcion, precio })
-      });
+                <div class="mb-6">
+                    <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                    <textarea id="descripcion" name="descripcion" rows="3" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
 
-      const data = await res.json();
-      alert("Respuesta: " + JSON.stringify(data));
-    });
-  </script>
+                <div class="mb-6">
+                    <label for="precio" class="block text-sm font-medium text-gray-700 mb-2">Precio</label>
+                    <input type="number" id="precio" name="precio" min="0" step="0.01" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="mb-6">
+                    <label for="categoria" class="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                    <select id="categoria" name="categoria" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Selecciona una categoría</option>
+                        <option value="Ensaladas">Ensaladas</option>
+                        <option value="Platos Principales">Platos Principales</option>
+                        <option value="Postres">Postres</option>
+                        <option value="Bebidas">Bebidas</option>
+                    </select>
+                </div>
+
+                <div class="mb-6">
+                    <label for="ingredientes" class="block text-sm font-medium text-gray-700 mb-2">Ingredientes</label>
+                    <div id="ingredientesContainer" class="space-y-2">
+                        <div class="flex gap-2">
+                            <input type="text" class="ingrediente-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <button type="button" onclick="removeIngrediente(this)" class="text-red-500 hover:text-red-700">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addIngrediente()" class="mt-2 text-blue-600 hover:text-blue-800">
+                        + Agregar ingrediente
+                    </button>
+                </div>
+
+                <div class="mb-6">
+                    <label for="calorias" class="block text-sm font-medium text-gray-700 mb-2">Calorías</label>
+                    <input type="number" id="calorias" name="calorias" min="0" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="mb-6">
+                    <label for="tiempo_preparacion" class="block text-sm font-medium text-gray-700 mb-2">Tiempo de Preparación (minutos)</label>
+                    <input type="number" id="tiempo_preparacion" name="tiempo_preparacion" min="0" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                </div>
+
+                <div class="mb-6">
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" id="disponible" name="disponible" checked
+                            class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <span class="text-sm font-medium text-gray-700">Disponible para la venta</span>
+                    </label>
+                </div>
+
+                <div class="flex justify-end space-x-4">
+                    <a href="index.html" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+                        Cancelar
+                    </a>
+                    <button type="submit"
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Crear Vianda
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Función para agregar un nuevo campo de ingrediente
+        function addIngrediente() {
+            const container = document.getElementById('ingredientesContainer');
+            const div = document.createElement('div');
+            div.className = 'flex gap-2';
+            div.innerHTML = `
+                <input type="text" class="ingrediente-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <button type="button" onclick="removeIngrediente(this)" class="text-red-500 hover:text-red-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            `;
+            container.appendChild(div);
+        }
+
+        // Función para eliminar un campo de ingrediente
+        function removeIngrediente(button) {
+            button.parentElement.remove();
+        }
+
+        // Manejar el envío del formulario
+        document.getElementById('createViandaForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Verificar autenticación
+            if (!isAuthenticated()) {
+                alert('Debes iniciar sesión para crear una vianda');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Recolectar ingredientes
+            const ingredientes = Array.from(document.getElementsByClassName('ingrediente-input'))
+                .map(input => input.value.trim())
+                .filter(value => value !== '');
+
+            // Crear objeto con los datos del formulario
+            const viandaData = {
+                nombre: document.getElementById('nombre').value,
+                descripcion: document.getElementById('descripcion').value,
+                precio: parseFloat(document.getElementById('precio').value),
+                categoria: document.getElementById('categoria').value,
+                ingredientes: ingredientes,
+                calorias: parseInt(document.getElementById('calorias').value),
+                tiempo_preparacion: parseInt(document.getElementById('tiempo_preparacion').value),
+                disponible: document.getElementById('disponible').checked
+            };
+
+            try {
+                const token = localStorage.getItem('access_token');
+                const response = await fetch('http://52.55.238.156:80/viandas', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(viandaData)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                alert('Vianda creada correctamente');
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al crear la vianda: ' + error.message);
+            }
+        });
+
+        // Verificar autenticación al cargar la página
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!isAuthenticated()) {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+
+</html>

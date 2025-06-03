@@ -7,11 +7,14 @@ from urllib.request import urlopen
 
 def get_cognito_user_id(event):
     try:
+        # Obtener el token del header de autorización
         auth_header = event.get('headers', {}).get('Authorization')
         if not auth_header or not auth_header.startswith('Bearer '):
             return None
         
         token = auth_header.split(' ')[1]
+        
+        # Obtener las claves públicas de Cognito
         region = os.environ.get('COGNITO_REGION', 'us-east-1')
         user_pool_id = os.environ.get('COGNITO_USER_POOL_ID')
         
@@ -22,6 +25,7 @@ def get_cognito_user_id(event):
         response = urlopen(keys_url)
         keys = json.loads(response.read())['keys']
         
+        # Decodificar el token
         headers = jwt.get_unverified_header(token)
         key = next((k for k in keys if k['kid'] == headers['kid']), None)
         
@@ -31,11 +35,42 @@ def get_cognito_user_id(event):
         public_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
         payload = jwt.decode(token, public_key, algorithms=['RS256'])
         
-        return payload.get('sub')
+        return payload.get('sub')  # 'sub' es el ID único del usuario en Cognito
         
     except Exception as e:
         print(f"Error al obtener el ID de usuario: {str(e)}")
         return None
+
+def validate_vianda_data(data):
+    required_fields = {
+        'nombre': str,
+        'descripcion': str,
+        'precio': (int, float),
+        'categoria': str,
+        'ingredientes': list,
+        'calorias': int,
+        'tiempo_preparacion': int,
+        'disponible': bool
+    }
+    
+    errors = []
+    
+    for field, field_type in required_fields.items():
+        if field not in data:
+            errors.append(f"El campo {field} es obligatorio")
+        elif not isinstance(data[field], field_type):
+            errors.append(f"El campo {field} debe ser de tipo {field_type.__name__}")
+    
+    if data.get('precio') is not None and data['precio'] <= 0:
+        errors.append("El precio debe ser mayor que 0")
+    
+    if data.get('calorias') is not None and data['calorias'] <= 0:
+        errors.append("Las calorías deben ser mayores que 0")
+    
+    if data.get('tiempo_preparacion') is not None and data['tiempo_preparacion'] <= 0:
+        errors.append("El tiempo de preparación debe ser mayor que 0")
+    
+    return errors
 
 def lambda_handler(event, context):
     try:
@@ -52,14 +87,15 @@ def lambda_handler(event, context):
         
         # Parsear el body recibido en el POST
         body = json.loads(event.get('body', '{}'))
-        vianda_id = body.get('vianda_id')
         
-        if not vianda_id:
+        # Validar los datos
+        validation_errors = validate_vianda_data(body)
+        if validation_errors:
             return {
                 'statusCode': 400,
                 'body': json.dumps({
                     'error': 'Datos inválidos',
-                    'detalles': 'Se requiere el ID de la vianda'
+                    'detalles': validation_errors
                 })
             }
         
@@ -74,39 +110,40 @@ def lambda_handler(event, context):
         
         cur = conn.cursor()
         
-        # Verificar si la vianda existe y está disponible
-        cur.execute("SELECT disponible FROM viandas WHERE id = %s", (vianda_id,))
-        result = cur.fetchone()
+        # Preparar los datos para la inserción
+        fecha_creacion = datetime.now()
         
-        if not result:
-            return {
-                'statusCode': 404,
-                'body': json.dumps({
-                    'error': 'Vianda no encontrada'
-                })
-            }
-            
-        if not result[0]:
-            return {
-                'statusCode': 400,
-                'body': json.dumps({
-                    'error': 'La vianda no está disponible'
-                })
-            }
-        
-        # Registrar la compra
-        fecha_compra = datetime.now()
         insert_query = """
-            INSERT INTO compras (vianda_id, comprador_id, fecha_compra)
-            VALUES (%s, %s, %s)
+            INSERT INTO viandas (
+                nombre, 
+                descripcion, 
+                precio, 
+                categoria, 
+                ingredientes, 
+                calorias, 
+                tiempo_preparacion, 
+                disponible,
+                fecha_creacion,
+                creador_id
+            )
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id;
         """
         
-        cur.execute(insert_query, (vianda_id, user_id, fecha_compra))
-        compra_id = cur.fetchone()[0]
+        cur.execute(insert_query, (
+            body['nombre'],
+            body['descripcion'],
+            body['precio'],
+            body['categoria'],
+            body['ingredientes'],
+            body['calorias'],
+            body['tiempo_preparacion'],
+            body['disponible'],
+            fecha_creacion,
+            user_id  # Usamos el ID del usuario de Cognito
+        ))
         
-        # Marcar la vianda como no disponible
-        cur.execute("UPDATE viandas SET disponible = false WHERE id = %s", (vianda_id,))
+        vianda_id = cur.fetchone()[0]
         
         conn.commit()
         cur.close()
@@ -115,9 +152,10 @@ def lambda_handler(event, context):
         return {
             'statusCode': 200,
             'body': json.dumps({
-                'message': 'Compra realizada correctamente',
-                'compra_id': compra_id,
-                'fecha_compra': fecha_compra.isoformat()
+                'message': 'Vianda creada correctamente',
+                'id': vianda_id,
+                'fecha_creacion': fecha_creacion.isoformat(),
+                'creador_id': user_id
             })
         }
         
@@ -125,7 +163,7 @@ def lambda_handler(event, context):
         return {
             'statusCode': 500,
             'body': json.dumps({
-                'error': 'Error al procesar la compra',
+                'error': 'Error al crear la vianda',
                 'detalles': str(e)
             })
         }

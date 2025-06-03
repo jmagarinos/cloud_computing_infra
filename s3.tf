@@ -155,3 +155,11 @@ resource "aws_s3_object" "config_js" {
   EOF
   content_type = "application/javascript"
 }
+
+resource "aws_s3_object" "write_vianda" {
+  bucket       = aws_s3_bucket.website.id
+  key          = "write_vianda.html"
+  source       = "${path.module}/resources/write_vianda.html"
+  content_type = "text/html"
+  etag         = filemd5("${path.module}/resources/write_vianda.html")
+}
