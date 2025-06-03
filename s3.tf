@@ -110,3 +110,35 @@ resource "aws_s3_object" "error" {
   content_type = "text/html"
   etag         = filemd5("${path.module}/resources/error.html")
 }
+
+resource "aws_s3_object" "signup" {
+  bucket       = aws_s3_bucket.website.id
+  key          = "signup.html"
+  source       = "${path.module}/resources/signup.html"
+  content_type = "text/html"
+  etag         = filemd5("${path.module}/resources/signup.html")
+}
+
+resource "aws_s3_object" "confirm" {
+  bucket       = aws_s3_bucket.website.id
+  key          = "confirm.html"
+  source       = "${path.module}/resources/confirm.html"
+  content_type = "text/html"
+  etag         = filemd5("${path.module}/resources/confirm.html")
+}
+
+resource "aws_s3_object" "profile" {
+  bucket       = aws_s3_bucket.website.id
+  key          = "profile.html"
+  source       = "${path.module}/resources/profile.html"
+  content_type = "text/html"
+  etag         = filemd5("${path.module}/resources/profile.html")
+}
+
+resource "aws_s3_object" "auth_js" {
+  bucket = aws_s3_bucket.website.id
+  key    = "js/auth.js"
+  source = "${path.module}/resources/js/auth.js"
+  etag   = filemd5("${path.module}/resources/js/auth.js")
+  content_type = "application/javascript"
+}

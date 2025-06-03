@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LunchBox - Viandas Deliciosas</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
+    <script src="js/auth.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,9 +24,9 @@
         <div class="container mx-auto px-4 py-6">
             <div class="flex items-center justify-between">
                 <h1 class="text-3xl font-bold text-blue-600">LunchBox</h1>
-                <a href="login.html" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
-                    Iniciar Sesión
-                </a>
+                <div class="header-right">
+                    <!-- El contenido se actualizará dinámicamente con auth.js -->
+                </div>
             </div>
         </div>
     </header>

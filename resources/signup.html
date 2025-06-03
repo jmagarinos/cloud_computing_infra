@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
+    <script src="js/auth.js"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-6">
+            <nav class="flex items-center justify-between">
+                <a href="index.html" class="text-blue-600 hover:text-blue-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </a>
+                <h1 class="text-3xl font-bold text-blue-600">LunchBox</h1>
+                <div class="w-6"></div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Signup Form -->
+    <div class="container mx-auto px-4 py-16">
+        <div class="max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="p-8">
+                <h2 class="text-2xl font-bold text-gray-800 text-center mb-8">Crear Cuenta</h2>
+                <form id="signupForm" class="space-y-6">
+                    <div>
+                        <label for="nombre" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nombre
+                        </label>
+                        <input type="text" id="nombre" name="nombre" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Tu nombre">
+                    </div>
+                    <div>
+                        <label for="apellido" class="block text-sm font-medium text-gray-700 mb-2">
+                            Apellido
+                        </label>
+                        <input type="text" id="apellido" name="apellido" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Tu apellido">
+                    </div>
+                    <div>
+                        <label for="telefono" class="block text-sm font-medium text-gray-700 mb-2">
+                            Teléfono
+                        </label>
+                        <input type="tel" id="telefono" name="telefono" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Tu número de teléfono">
+                    </div>
+                    <div>
+                        <label for="direccion" class="block text-sm font-medium text-gray-700 mb-2">
+                            Dirección
+                        </label>
+                        <input type="text" id="direccion" name="direccion" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Tu dirección completa">
+                    </div>
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                            Correo Electrónico
+                        </label>
+                        <input type="email" id="email" name="email" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="tu@email.com">
+                    </div>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                            Contraseña
+                        </label>
+                        <input type="password" id="password" name="password" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="••••••••">
+                        <p class="mt-1 text-sm text-gray-500">
+                            Mínimo 8 caracteres, incluir mayúsculas y números
+                        </p>
+                    </div>
+                    <div>
+                        <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">
+                            Confirmar Contraseña
+                        </label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="••••••••">
+                    </div>
+                    <div>
+                        <button type="submit"
+                            class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200">
+                            Registrarse
+                        </button>
+                    </div>
+                </form>
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-600">
+                        ¿Ya tienes una cuenta?
+                        <a href="login.html" class="text-blue-600 hover:text-blue-800 font-medium">
+                            Inicia sesión aquí
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aquí agregamos la librería de Cognito + el script de registro -->
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.0.1/dist/amazon-cognito-identity.min.js"></script>
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nombre = document.getElementById('nombre').value;
+            const apellido = document.getElementById('apellido').value;
+            const telefono = document.getElementById('telefono').value;
+            const direccion = document.getElementById('direccion').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                alert('Las contraseñas no coinciden');
+                return;
+            }
+
+            // Validar formato del teléfono (debe incluir código de país)
+            const phoneRegex = /^\+[1-9]\d{1,14}$/;
+            if (!phoneRegex.test(telefono)) {
+                alert('El número de teléfono debe incluir el código de país (ejemplo: +54123456789)');
+                return;
+            }
+
+            const poolData = {
+                UserPoolId: 'us-east-1_JosgMkDGE',  // User Pool ID de Cognito
+                ClientId: '4femhf9urmn6vfu07k19jdod5a' // Client ID de Cognito
+            };
+
+            const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+            const attributeList = [
+                new AmazonCognitoIdentity.CognitoUserAttribute({
+                    Name: 'email',
+                    Value: email
+                }),
+                new AmazonCognitoIdentity.CognitoUserAttribute({
+                    Name: 'given_name',
+                    Value: nombre
+                }),
+                new AmazonCognitoIdentity.CognitoUserAttribute({
+                    Name: 'family_name',
+                    Value: apellido
+                }),
+                new AmazonCognitoIdentity.CognitoUserAttribute({
+                    Name: 'phone_number',
+                    Value: telefono
+                }),
+                new AmazonCognitoIdentity.CognitoUserAttribute({
+                    Name: 'address',
+                    Value: direccion
+                })
+            ];
+
+            userPool.signUp(email, password, attributeList, null, (err, result) => {
+                if (err) {
+                    console.error('Error en el registro:', err);
+                    alert('Error al registrarse: ' + (err.message || JSON.stringify(err)));
+                    return;
+                }
+
+                console.log('Usuario registrado:', result);
+                alert('¡Registro exitoso! Por favor, verifica tu correo electrónico.');
+                window.location.href = 'confirm.html?email=' + encodeURIComponent(email);
+            });
+        });
+    </script>
+
+</body>
+
+</html> 

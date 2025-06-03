@@ -4,16 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LunchBox - Iniciar Sesión</title>
+    <title>Iniciar Sesión - Cloud Computing Infrastructure</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
+    <script src="js/auth.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
@@ -40,6 +34,7 @@
             <div class="p-8">
                 <h2 class="text-2xl font-bold text-gray-800 text-center mb-8">Iniciar Sesión</h2>
                 <form id="loginForm" class="space-y-6">
+                    <div id="errorMessage" class="hidden text-red-600 text-sm mb-4"></div>
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
                             Correo Electrónico
@@ -78,7 +73,7 @@
                 <div class="mt-6 text-center">
                     <p class="text-sm text-gray-600">
                         ¿No tienes una cuenta?
-                        <a href="#" class="text-blue-600 hover:text-blue-800 font-medium">
+                        <a href="signup.html" class="text-blue-600 hover:text-blue-800 font-medium">
                             Regístrate aquí
                         </a>
                     </p>
@@ -98,8 +93,8 @@
             const password = document.getElementById('password').value;
 
             const poolData = {
-                UserPoolId: 'us-east-1_7yDaMtz7a',  // <--- REEMPLAZAR con output cognito_user_pool_id
-                ClientId: '5lmk2ik90bj3lcb9ghpu1k138q' // <--- REEMPLAZAR con output cognito_user_pool_client_id
+                UserPoolId: 'us-east-1_JosgMkDGE',  // User Pool ID de Cognito
+                ClientId: '4femhf9urmn6vfu07k19jdod5a' // Client ID de Cognito
             };
 
             const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
@@ -116,16 +111,28 @@
 
             user.authenticateUser(authDetails, {
                 onSuccess: function (result) {
-                    console.log('Login successful');
-                    console.log('Access token:', result.getAccessToken().getJwtToken());
-                    // Guardás el token en localStorage:
-                    localStorage.setItem('access_token', result.getAccessToken().getJwtToken());
-                    alert('Inicio de sesión exitoso');
+                    console.log('Login exitoso:', result);
+                    // Guardar el token de acceso
+                    localStorage.setItem('accessToken', result.getAccessToken().getJwtToken());
                     window.location.href = 'index.html';
                 },
                 onFailure: function (err) {
-                    console.error('Login failed:', err);
-                    alert('Error al iniciar sesión: ' + (err.message || JSON.stringify(err)));
+                    console.error('Error en login:', err);
+                    const errorMessage = document.getElementById('errorMessage');
+                    if (err.code === 'UserNotConfirmedException') {
+                        errorMessage.textContent = 'Tu cuenta no está confirmada. Por favor, verifica tu correo electrónico y confirma tu cuenta.';
+                        // Redirigir a la página de confirmación con el email
+                        setTimeout(() => {
+                            window.location.href = `confirm.html?email=${encodeURIComponent(email)}`;
+                        }, 2000);
+                    } else if (err.code === 'NotAuthorizedException') {
+                        errorMessage.textContent = 'Credenciales incorrectas. Por favor, verifica tu email y contraseña.';
+                    } else if (err.code === 'UserNotFoundException') {
+                        errorMessage.textContent = 'No existe una cuenta con este email. Por favor, regístrate primero.';
+                    } else {
+                        errorMessage.textContent = 'Error al iniciar sesión: ' + (err.message || JSON.stringify(err));
+                    }
+                    errorMessage.classList.remove('hidden');
                 }
             });
         });
