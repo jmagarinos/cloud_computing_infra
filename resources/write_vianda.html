@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Viandas</title>
+</head>
+<body>
+  <h1>Gestión de Viandas</h1>
+
+  <!-- Formulario para crear vianda -->
+  <h2>Crear Vianda</h2>
+  <form id="formCrearVianda">
+    <input type="text" id="nombre" placeholder="Nombre de la vianda" required>
+    <input type="text" id="descripcion" placeholder="Decripcion" required>
+    <input type="number" id="precio" placeholder="Precio" required>
+    <button type="submit">Crear</button>
+  </form>
+
+  <script>
+     const apiBase = "https://<API_ID>.execute-api.<REGION>.amazonaws.com/prod"; //todo : como hacer que sea dinámico en base al output?
+
+    // Crear vianda
+    document.getElementById("formCrearVianda").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const nombre = document.getElementById("nombre").value;
+      const descripcion = document.getElementById("descripcion").value;
+      const precio = document.getElementById("precio").value;
+      
+
+      const res = await fetch(`${apiBase}/viandas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, descripcion, precio })
+      });
+
+      const data = await res.json();
+      alert("Respuesta: " + JSON.stringify(data));
+    });
+  </script>

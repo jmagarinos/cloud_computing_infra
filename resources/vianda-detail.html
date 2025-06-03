@@ -47,7 +47,7 @@
                         $<span id="viandaPrecio"></span>
                     </div>
                     <p id="viandaDescripcion" class="text-gray-600 mb-8 leading-relaxed"></p>
-                    <button id="comprarButton"
+                    <button onclick="comprarVianda()" id="comprarButton"
                         class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200">
                         Comprar Ahora
                     </button>
@@ -60,6 +60,7 @@
         // Get the vianda ID from the URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const viandaId = urlParams.get('id');
+        const apiBase = "https://<API_ID>.execute-api.<REGION>.amazonaws.com/prod";//todo : como hacer que sea dinámico en base al output?
 
         async function loadViandaDetail() {
             try {
@@ -103,6 +104,16 @@
 
         // Load vianda details when the page loads
         loadViandaDetail();
+
+        // Comprar vianda
+        async function comprarVianda() {
+        const res = await fetch(`${apiBase}/comprar`, {
+            method: "POST"
+        });
+
+        const data = await res.json();
+        alert("Compra realizada: " + JSON.stringify(data));
+        }
     </script>
 </body>
 

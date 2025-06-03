@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS persona (
 CREATE TABLE IF NOT EXISTS vianda (
     id SERIAL PRIMARY KEY,
     titulo VARCHAR(100) NOT NULL,
-    imagen VARCHAR(255) NOT NULL,
+    imagen VARCHAR(255),
     descripcion TEXT NOT NULL,
     precio DECIMAL(10,2) NOT NULL,
     fk_dueno INTEGER NOT NULL,
