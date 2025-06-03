@@ -32,6 +32,6 @@ resource "aws_cognito_user_pool_client" "web_client" {
 }
 
 resource "aws_cognito_user_pool_domain" "main" {
-  domain       = format("%s-%s-login", var.project_name, var.environment)
+  domain       = format("%s-%s-login-%s", var.project_name, var.environment, substr(md5(aws_cognito_user_pool.main.id), 0, 6))
   user_pool_id = aws_cognito_user_pool.main.id
 }

@@ -2,7 +2,7 @@
 # S3 Bucket
 # -----------------------------
 resource "aws_s3_bucket" "website" {
-  bucket = lower(format("website-%s-%s", var.project_name, var.environment))
+  bucket = lower(format("website-%s-%s-%s", var.project_name, var.environment, substr(md5(var.project_name), 0, 6)))
 
   # lifecycle {
   #   prevent_destroy = true
