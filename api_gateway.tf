@@ -104,3 +104,53 @@ resource "aws_lambda_permission" "allow_api_gateway_delete" {
   source_arn    = "${aws_api_gateway_rest_api.vianda_api.execution_arn}/*/*"
 }
 
+# Método GET para listar viandas
+resource "aws_api_gateway_method" "get_viandas" {
+  rest_api_id   = aws_api_gateway_rest_api.vianda_api.id
+  resource_id   = aws_api_gateway_resource.viandas.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "lambda_list_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.vianda_api.id
+  resource_id             = aws_api_gateway_resource.viandas.id
+  http_method             = aws_api_gateway_method.get_viandas.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.vianda_list.invoke_arn
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_list" {
+  statement_id  = "AllowAPIGatewayInvokeList"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.vianda_list.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.vianda_api.execution_arn}/*/*"
+}
+
+# Método GET para obtener una vianda específica
+resource "aws_api_gateway_method" "get_vianda" {
+  rest_api_id   = aws_api_gateway_rest_api.vianda_api.id
+  resource_id   = aws_api_gateway_resource.vianda_id.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "lambda_get_integration" {
+  rest_api_id             = aws_api_gateway_rest_api.vianda_api.id
+  resource_id             = aws_api_gateway_resource.vianda_id.id
+  http_method             = aws_api_gateway_method.get_vianda.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.vianda_get.invoke_arn
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_get" {
+  statement_id  = "AllowAPIGatewayInvokeGet"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.vianda_get.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.vianda_api.execution_arn}/*/*"
+}
+

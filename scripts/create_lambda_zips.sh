@@ -14,5 +14,15 @@ cd temp_lambda
 zip ../lambda_vianda_delete.zip lambda_function.py
 cd ..
 
+cp lambda_vianda_list.py temp_lambda/lambda_function.py
+cd temp_lambda
+zip ../lambda_vianda_list.zip lambda_function.py
+cd ..
+
+cp lambda_vianda_get.py temp_lambda/lambda_function.py
+cd temp_lambda
+zip ../lambda_vianda_get.zip lambda_function.py
+cd ..
+
 # Limpiar
 rm -rf temp_lambda 
