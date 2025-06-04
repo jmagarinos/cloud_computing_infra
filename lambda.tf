@@ -96,6 +96,40 @@ resource "aws_lambda_function" "rds_init" {
   }
 }
 
+resource "aws_lambda_function" "cognito_post_confirmation_trigger" {
+  function_name = "cognito-post-confirmation-trigger"
+  role          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole" # Using the existing LabRole
+  runtime       = "python3.12"
+  handler       = "lambda_cognito_post_confirmation.lambda_handler"
+  filename      = "${path.module}/scripts/lambda_cognito_post_confirmation.zip"
+
+  environment {
+    variables = {
+      DB_HOST     = aws_db_instance.postgres.address
+      DB_NAME     = "lunchbox"
+      DB_USER     = var.db_username
+      DB_PASSWORD = var.db_password
+    }
+  }
+
+  timeout = 30 # seconds
+
+  vpc_config {
+    subnet_ids         = [for subnet in aws_subnet.private : subnet.id]
+    security_group_ids = [module.sg.security_group_id]
+  }
+
+  layers     = [aws_lambda_layer_version.psycopg2_layer.arn] # Needs psycopg2 to connect to RDS
+  depends_on = [aws_db_instance.postgres]
+}
+
+resource "aws_lambda_permission" "allow_cognito_to_invoke_post_confirmation" {
+  statement_id  = "AllowCognitoInvokePostConfirmationTrigger"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.cognito_post_confirmation_trigger.function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.main.arn
+}
 
 resource "aws_lambda_layer_version" "psycopg2_layer" {
   layer_name          = "psycopg2-lunchbox"

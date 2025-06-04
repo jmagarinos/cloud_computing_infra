@@ -24,5 +24,10 @@ cd temp_lambda
 zip ../lambda_vianda_get.zip lambda_function.py
 cd ..
 
+cp lambda_cognito_post_confirmation.py temp_lambda/lambda_cognito_post_confirmation.py
+cd temp_lambda
+zip ../lambda_cognito_post_confirmation.zip lambda_cognito_post_confirmation.py
+cd ..
+
 # Limpiar
 rm -rf temp_lambda 

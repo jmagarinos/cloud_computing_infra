@@ -10,6 +10,10 @@ resource "aws_cognito_user_pool" "main" {
   }
 
   auto_verified_attributes = ["email"]
+
+  lambda_config {
+    post_confirmation = aws_lambda_function.cognito_post_confirmation_trigger.arn
+  }
 }
 
 resource "aws_cognito_user_pool_client" "web_client" {
@@ -32,6 +36,6 @@ resource "aws_cognito_user_pool_client" "web_client" {
 }
 
 resource "aws_cognito_user_pool_domain" "main" {
-  domain       = format("%s-%s-login-%s", var.project_name, var.environment, substr(md5(aws_cognito_user_pool.main.id), 0, 6))
+  domain       = format("%s-%s-login-%s", var.project_name, var.environment, formatdate("YYYYMMDDHHmmss", timestamp()))
   user_pool_id = aws_cognito_user_pool.main.id
 }

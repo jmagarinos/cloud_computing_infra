@@ -49,5 +49,5 @@ output "frontend_url" {
 }
 
 output "vianda_api_invoke_url" {
-  value = "${aws_api_gateway_deployment.vianda_api_deployment.invoke_url}/viandas"
+  value = "${aws_api_gateway_deployment.vianda_api_deployment.invoke_url}"
 }
