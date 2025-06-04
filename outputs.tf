@@ -49,5 +49,6 @@ output "frontend_url" {
 }
 
 output "vianda_api_invoke_url" {
-  value = "${aws_api_gateway_deployment.vianda_api_deployment.invoke_url}"
+  value = aws_apigatewayv2_stage.vianda_api_stage.invoke_url
+  description = "URL de invocación de la API HTTP de viandas"
 }

@@ -163,7 +163,7 @@ resource "aws_s3_object" "config_js" {
 
     // Configuración de la API
     const apiConfig = {
-      apiUrl: "${aws_api_gateway_deployment.vianda_api_deployment.invoke_url}"
+      apiUrl: "${aws_apigatewayv2_stage.vianda_api_stage.invoke_url}"
     };
   EOF
   content_type = "application/javascript"
