@@ -59,6 +59,45 @@ resource "aws_lambda_function" "vianda" {
   layers = [aws_lambda_layer_version.psycopg2_layer.arn, aws_lambda_layer_version.jwt_layer.arn]
 }
 
+resource "aws_lambda_function" "rds_init" {
+  function_name = "rds-init"
+
+  role = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
+
+  runtime  = "python3.12"
+  handler  = "lambda_rds_init.lambda_handler"
+  filename = "${path.module}/scripts/lambda_rds_init.zip"
+
+  environment {
+    variables = {
+      DB_HOST     = aws_db_instance.postgres.address
+      DB_NAME     = "lunchbox"
+      DB_USER     = var.db_username
+      DB_PASSWORD = var.db_password
+    }
+  }
+
+  timeout = 60
+
+  vpc_config {
+    subnet_ids         = [for subnet in aws_subnet.private : subnet.id]
+    security_group_ids = [module.sg.security_group_id]
+  }
+
+  layers = [aws_lambda_layer_version.psycopg2_layer.arn]
+
+  provisioner "local-exec" {
+    command = <<EOT
+      aws lambda invoke \
+        --function-name ${aws_lambda_function.rds_init.function_name} \
+        --region us-east-1 \
+        --payload '{}' \
+        /tmp/rds_init_output.json
+    EOT
+  }
+}
+
+
 resource "aws_lambda_layer_version" "psycopg2_layer" {
   layer_name          = "psycopg2-lunchbox"
   compatible_runtimes = ["python3.12"]

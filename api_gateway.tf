@@ -93,6 +93,13 @@ resource "aws_lambda_permission" "allow_api_gateway_buy" {
   source_arn    = "${aws_api_gateway_rest_api.vianda_api.execution_arn}/*/*"
 }
 
+resource "aws_api_gateway_stage" "vianda_api_stage" {
+  deployment_id = aws_api_gateway_deployment.vianda_api_deployment.id
+  rest_api_id   = aws_api_gateway_rest_api.vianda_api.id
+  stage_name    = "dev"
+}
+
+
 # Recurso /viandas/{id}
 resource "aws_api_gateway_resource" "vianda_id" {
   rest_api_id = aws_api_gateway_rest_api.vianda_api.id
@@ -161,4 +168,5 @@ resource "aws_api_gateway_deployment" "vianda_api_deployment" {
   ]
 
   rest_api_id = aws_api_gateway_rest_api.vianda_api.id
+
 }

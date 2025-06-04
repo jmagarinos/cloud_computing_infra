@@ -12,7 +12,7 @@ resource "aws_security_group" "bastion_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["TU_IP_PERSONAL/32"] # HAY QUE PONER IP PROPIA PARA USAR EL BASTION
+    cidr_blocks = ["190.16.197.33/32"]
   }
 
   egress {
