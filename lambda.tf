@@ -42,10 +42,11 @@ resource "aws_lambda_function" "vianda" {
 
   environment {
     variables = {
-      DB_HOST     = aws_db_instance.postgres.address
-      DB_NAME     = "lunchbox"
-      DB_USER     = var.db_username
-      DB_PASSWORD = var.db_password
+      DB_HOST              = aws_db_instance.postgres.address
+      DB_NAME              = "lunchbox"
+      DB_USER              = var.db_username
+      DB_PASSWORD          = var.db_password
+      COGNITO_USER_POOL_ID = aws_cognito_user_pool.main.id
     }
   }
 
@@ -55,8 +56,8 @@ resource "aws_lambda_function" "vianda" {
     subnet_ids         = [for subnet in aws_subnet.private : subnet.id]
     security_group_ids = [module.sg.security_group_id]
   }
-
-  layers = [aws_lambda_layer_version.psycopg2_layer.arn, aws_lambda_layer_version.jwt_layer.arn]
+  depends_on = [aws_cognito_user_pool.main]
+  layers     = [aws_lambda_layer_version.psycopg2_layer.arn, aws_lambda_layer_version.jwt_layer.arn]
 }
 
 resource "aws_lambda_function" "rds_init" {
