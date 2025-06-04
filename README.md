@@ -89,46 +89,33 @@ JS en `resources/js/`:
 
 El schema de la base se encuentra en:
 
-```text
 resources/db_init.sql
 
 1️⃣ Configurar credenciales de AWS
 Opcional: podés usar el script helper:
 
-bash
-Copiar
-Editar
 ./check_creds.sh
 O configurar con:
 
-bash
-Copiar
-Editar
 aws configure
+
 2️⃣ Inicializar Terraform
-bash
-Copiar
-Editar
+
 terraform init
+
 3️⃣ Planificar cambios
-bash
-Copiar
-Editar
+
 terraform plan
+
 4️⃣ Aplicar cambios
-bash
-Copiar
-Editar
+
 terraform apply
+
 5️⃣ Empaquetar Lambdas
-bash
-Copiar
-Editar
+
 ./scripts/create_lambda_zips.sh
+
 6️⃣ Subir ZIPs a Lambda
 Una vez empaquetados, los ZIPs se encuentran en:
 
-text
-Copiar
-Editar
 /scripts/*.zip
