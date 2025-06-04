@@ -19,6 +19,9 @@ resource "aws_apigatewayv2_route" "post_viandas" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "POST /viandas"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_integration" {
@@ -68,6 +71,9 @@ resource "aws_apigatewayv2_route" "post_comprar" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "POST /comprar"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_buy_integration.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_buy_integration" {
@@ -91,6 +97,9 @@ resource "aws_apigatewayv2_route" "delete_vianda" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "DELETE /viandas/{id}"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_delete_integration.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_delete_integration" {
@@ -114,6 +123,9 @@ resource "aws_apigatewayv2_route" "get_vianda" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "GET /viandas/{id}"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_get_integration.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_get_integration" {

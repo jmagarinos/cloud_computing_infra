@@ -5,30 +5,43 @@ import psycopg2
 def lambda_handler(event, context):
     try:
         print("Lambda LIST iniciada")
-        
-        # Obtener email del usuario autenticado (por si queremos loguear quién hace la consulta)
         print(f"Evento recibido: {json.dumps(event, indent=2)}")
         
-        # Fix: Access claims from the correct nested path
-        authorizer = event.get('requestContext', {}).get('authorizer', {})
+        # Verificar si tenemos el contexto de autorización
+        request_context = event.get('requestContext', {})
+        print(f"Request Context: {json.dumps(request_context, indent=2)}")
+        
+        authorizer = request_context.get('authorizer', {})
+        print(f"Authorizer: {json.dumps(authorizer, indent=2)}")
+        
         jwt_info = authorizer.get('jwt', {})
+        print(f"JWT Info: {json.dumps(jwt_info, indent=2)}")
+        
         claims = jwt_info.get('claims', {})
+        print(f"Claims: {json.dumps(claims, indent=2)}")
         
         # Extract user information from claims
         cognito_sub = claims.get('sub')  # Cognito user ID
         username = claims.get('username')
+        email = claims.get('email')
+        
+        print(f"Cognito Sub: {cognito_sub}")
+        print(f"Username: {username}")
+        print(f"Email: {email}")
         
         if not cognito_sub:
             print("No se encontró el cognito_sub en claims")
             return {
                 'statusCode': 401,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Credentials': True
+                },
                 'body': json.dumps({
                     'error': 'No autorizado',
                     'detalles': 'No se encontró el cognito_sub en el token'
                 })
             }
-        
-        print(f"Cognito Sub autenticado: {cognito_sub}")
         
         # Conexión a la base de datos
         print("Conectando a la base de datos")
@@ -55,22 +68,25 @@ def lambda_handler(event, context):
             print(f"No se encontró el usuario con cognito_sub: {cognito_sub}")
             return {
                 'statusCode': 404,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Credentials': True
+                },
                 'body': json.dumps({
                     'error': 'Usuario no encontrado',
                     'detalles': 'No se encontró el usuario en la base de datos'
                 })
             }
         
-        user_id, nombre, apellido, email, telefono, direccion = user_info
-        print(f"Usuario encontrado: {nombre} {apellido} ({email})")
+        user_id, nombre, apellido, db_email, telefono, direccion = user_info
+        print(f"Usuario encontrado: {nombre} {apellido} ({db_email})")
         
         # Obtener todas las viandas disponibles
         query = """
-            SELECT v.id, v.titulo, v.descripcion, v.precio, v.imagen, v.disponible,
+            SELECT v.id, v.titulo, v.descripcion, v.precio, v.imagen,
                    p.nombre as creador_nombre, p.apellido as creador_apellido
             FROM vianda v
             JOIN persona p ON v.fk_dueno = p.id
-            WHERE v.disponible = true
             ORDER BY v.id DESC
         """
         
@@ -87,10 +103,9 @@ def lambda_handler(event, context):
                 'descripcion': vianda[2],
                 'precio': float(vianda[3]),
                 'imagen': vianda[4],
-                'disponible': vianda[5],
                 'creador': {
-                    'nombre': vianda[6],
-                    'apellido': vianda[7]
+                    'nombre': vianda[5],
+                    'apellido': vianda[6]
                 }
             })
         
@@ -101,6 +116,10 @@ def lambda_handler(event, context):
         
         return {
             'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Credentials': True
+            },
             'body': json.dumps({
                 'viandas': viandas_list
             })
@@ -108,8 +127,14 @@ def lambda_handler(event, context):
         
     except Exception as e:
         print(f"Error en la Lambda: {str(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
         return {
             'statusCode': 500,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Credentials': True
+            },
             'body': json.dumps({
                 'error': 'Error al obtener las viandas',
                 'detalles': str(e)

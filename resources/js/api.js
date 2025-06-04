@@ -37,7 +37,10 @@ class LunchBoxAPI {
                 headers: this.getAuthHeaders()
             });
             
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.ok){
+                console.log('response:', response);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            } 
             return await response.json();
         } catch (error) {
             this.handleError(error);
@@ -68,7 +71,10 @@ class LunchBoxAPI {
                 body: JSON.stringify(viandaData)
             });
             
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            if (!response.ok){
+                console.log('response:', response);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            } 
             return await response.json();
         } catch (error) {
             this.handleError(error);

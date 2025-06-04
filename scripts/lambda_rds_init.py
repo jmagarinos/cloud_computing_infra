@@ -39,6 +39,7 @@ def lambda_handler(event, context):
                 imagen VARCHAR(255),
                 descripcion TEXT NOT NULL,
                 precio DECIMAL(10,2) NOT NULL,
+                disponible BOOLEAN NOT NULL DEFAULT TRUE,
                 fk_dueno INTEGER NOT NULL,
                 FOREIGN KEY (fk_dueno) REFERENCES persona(id)
             );
