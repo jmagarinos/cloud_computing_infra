@@ -1,73 +1,6 @@
 import json
 import os
 import psycopg2
-from datetime import datetime
-import jwt
-from urllib.request import urlopen
-
-def get_persona_id(event):
-    try:
-        # Obtener el token del header de autorización
-        auth_header = event.get('headers', {}).get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return None
-        
-        token = auth_header.split(' ')[1]
-        
-        # Obtener las claves públicas de Cognito
-        region = os.environ.get('COGNITO_REGION', 'us-east-1')
-        user_pool_id = os.environ.get('COGNITO_USER_POOL_ID')
-        
-        if not user_pool_id:
-            raise Exception("COGNITO_USER_POOL_ID no está configurado")
-            
-        keys_url = f'https://cognito-idp.{region}.amazonaws.com/{user_pool_id}/.well-known/jwks.json'
-        response = urlopen(keys_url)
-        keys = json.loads(response.read())['keys']
-        
-        # Decodificar el token
-        headers = jwt.get_unverified_header(token)
-        key = next((k for k in keys if k['kid'] == headers['kid']), None)
-        
-        if not key:
-            raise Exception("No se encontró la clave para verificar el token")
-            
-        public_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
-        payload = jwt.decode(token, public_key, algorithms=['RS256'])
-        
-        # Obtener el email del token
-        email = payload.get('email')
-        if not email:
-            raise Exception("No se encontró el email en el token")
-            
-        # Conectar a la base de datos
-        conn = psycopg2.connect(
-            host=os.environ['DB_HOST'],
-            database=os.environ['DB_NAME'],
-            user=os.environ['DB_USER'],
-            password=os.environ['DB_PASSWORD'],
-            port=5432
-        )
-        
-        cur = conn.cursor()
-        
-        # Buscar el ID de la persona por email
-        cur.execute("SELECT id FROM persona WHERE mail = %s", (email,))
-        result = cur.fetchone()
-        
-        if not result:
-            raise Exception("No se encontró la persona con ese email")
-            
-        persona_id = result[0]
-        
-        cur.close()
-        conn.close()
-        
-        return persona_id
-        
-    except Exception as e:
-        print(f"Error al obtener el ID de persona: {str(e)}")
-        return None
 
 def validate_vianda_data(data):
     required_fields = {
@@ -91,23 +24,32 @@ def validate_vianda_data(data):
 
 def lambda_handler(event, context):
     try:
-        # Verificar autenticación y obtener ID de persona
-        persona_id = get_persona_id(event)
-        if not persona_id:
+        print("Lambda iniciada")
+        
+        # Obtener email del usuario autenticado
+        claims = event['requestContext']['authorizer']['claims']
+        email = claims.get('email')
+        
+        if not email:
+            print("No se encontró el email en claims")
             return {
                 'statusCode': 401,
                 'body': json.dumps({
                     'error': 'No autorizado',
-                    'detalles': 'Se requiere autenticación'
+                    'detalles': 'No se encontró el email en el token'
                 })
             }
         
+        print(f"Email autenticado: {email}")
+        
         # Parsear el body recibido en el POST
         body = json.loads(event.get('body', '{}'))
+        print(f"Body recibido: {body}")
         
         # Validar los datos
         validation_errors = validate_vianda_data(body)
         if validation_errors:
+            print(f"Errores de validación: {validation_errors}")
             return {
                 'statusCode': 400,
                 'body': json.dumps({
@@ -117,6 +59,7 @@ def lambda_handler(event, context):
             }
         
         # Conexión a la base de datos
+        print("Conectando a la base de datos")
         conn = psycopg2.connect(
             host=os.environ['DB_HOST'],
             database=os.environ['DB_NAME'],
@@ -126,6 +69,17 @@ def lambda_handler(event, context):
         )
         
         cur = conn.cursor()
+        
+        # Buscar el ID de la persona por email
+        print(f"Buscando persona con email: {email}")
+        cur.execute("SELECT id FROM persona WHERE mail = %s", (email,))
+        result = cur.fetchone()
+        
+        if not result:
+            raise Exception("No se encontró la persona con ese email")
+        
+        persona_id = result[0]
+        print(f"Persona encontrada: id = {persona_id}")
         
         # Preparar los datos para la inserción
         insert_query = """
@@ -140,12 +94,13 @@ def lambda_handler(event, context):
             RETURNING id;
         """
         
+        print("Insertando vianda")
         cur.execute(insert_query, (
             body['titulo'],
             body['descripcion'],
             body['precio'],
             body.get('imagen'),
-            persona_id  # Usamos el ID de la persona
+            persona_id
         ))
         
         vianda_id = cur.fetchone()[0]
@@ -153,6 +108,8 @@ def lambda_handler(event, context):
         conn.commit()
         cur.close()
         conn.close()
+        
+        print(f"Vianda creada correctamente con id = {vianda_id}")
         
         return {
             'statusCode': 200,
@@ -163,6 +120,7 @@ def lambda_handler(event, context):
         }
         
     except Exception as e:
+        print(f"Error en la Lambda: {str(e)}")
         return {
             'statusCode': 500,
             'body': json.dumps({

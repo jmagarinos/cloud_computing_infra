@@ -1,55 +1,29 @@
 import json
 import os
 import psycopg2
-import jwt
-from urllib.request import urlopen
-
-def get_cognito_user_id(event):
-    try:
-        auth_header = event.get('headers', {}).get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return None
-        
-        token = auth_header.split(' ')[1]
-        region = os.environ.get('COGNITO_REGION', 'us-east-1')
-        user_pool_id = os.environ.get('COGNITO_USER_POOL_ID')
-        
-        if not user_pool_id:
-            raise Exception("COGNITO_USER_POOL_ID no está configurado")
-            
-        keys_url = f'https://cognito-idp.{region}.amazonaws.com/{user_pool_id}/.well-known/jwks.json'
-        response = urlopen(keys_url)
-        keys = json.loads(response.read())['keys']
-        
-        headers = jwt.get_unverified_header(token)
-        key = next((k for k in keys if k['kid'] == headers['kid']), None)
-        
-        if not key:
-            raise Exception("No se encontró la clave para verificar el token")
-            
-        public_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
-        payload = jwt.decode(token, public_key, algorithms=['RS256'])
-        
-        return payload.get('sub')
-        
-    except Exception as e:
-        print(f"Error al obtener el ID de usuario: {str(e)}")
-        return None
 
 def lambda_handler(event, context):
     try:
-        # Verificar autenticación
-        user_id = get_cognito_user_id(event)
-        if not user_id:
+        print("Lambda LIST iniciada")
+        
+        # Obtener email del usuario autenticado (por si queremos loguear quién hace la consulta)
+        claims = event['requestContext']['authorizer']['claims']
+        email = claims.get('email')
+        
+        if not email:
+            print("No se encontró el email en claims")
             return {
                 'statusCode': 401,
                 'body': json.dumps({
                     'error': 'No autorizado',
-                    'detalles': 'Se requiere autenticación'
+                    'detalles': 'No se encontró el email en el token'
                 })
             }
         
+        print(f"Email autenticado: {email}")
+        
         # Conexión a la base de datos
+        print("Conectando a la base de datos")
         conn = psycopg2.connect(
             host=os.environ['DB_HOST'],
             database=os.environ['DB_NAME'],
@@ -64,12 +38,13 @@ def lambda_handler(event, context):
         query = """
             SELECT v.id, v.titulo, v.descripcion, v.precio, v.imagen, v.disponible,
                    p.nombre as creador_nombre, p.apellido as creador_apellido
-            FROM viandas v
+            FROM vianda v
             JOIN persona p ON v.fk_dueno = p.id
             WHERE v.disponible = true
             ORDER BY v.id DESC
         """
         
+        print("Ejecutando query de viandas disponibles")
         cur.execute(query)
         viandas = cur.fetchall()
         
@@ -92,6 +67,8 @@ def lambda_handler(event, context):
         cur.close()
         conn.close()
         
+        print(f"Se encontraron {len(viandas_list)} viandas disponibles")
+        
         return {
             'statusCode': 200,
             'body': json.dumps({
@@ -100,10 +77,11 @@ def lambda_handler(event, context):
         }
         
     except Exception as e:
+        print(f"Error en la Lambda: {str(e)}")
         return {
             'statusCode': 500,
             'body': json.dumps({
                 'error': 'Error al obtener las viandas',
                 'detalles': str(e)
             })
-        } 
+        }
