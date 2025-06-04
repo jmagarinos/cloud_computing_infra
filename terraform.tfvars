@@ -14,7 +14,8 @@ cognito_callback_url = "https://lunchbox-dev-login.auth.us-east-1.amazoncognito.
 
 cognito_logout_url = "https://lunchbox-dev-login.auth.us-east-1.amazoncognito.com/logout"
 
-environment        = "dev"
-project_team       = "dev"
-vpc_cidr          = "10.0.0.0/16"
+environment  = "dev"
+project_team = "dev"
+vpc_cidr     = "10.0.0.0/16"
 
+public_subnet_cidr = "10.0.10.0/24"

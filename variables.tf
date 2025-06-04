@@ -69,3 +69,7 @@ variable "cognito_logout_url" {
   type        = string
 }
 
+variable "public_subnet_cidr" {
+  description = "CIDR block for public subnet"
+  type        = string
+}
