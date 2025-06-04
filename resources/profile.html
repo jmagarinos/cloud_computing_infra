@@ -1,11 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LunchBox - Mi Perfil</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script type="module" src="js/api.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -34,92 +38,175 @@
         </div>
     </header>
 
-    <!-- Profile Content -->
+    <!-- Main Content -->
     <div class="container mx-auto px-4 py-16">
-        <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-            <div class="p-8">
-                <h2 class="text-2xl font-bold text-gray-800 text-center mb-8">Mi Perfil</h2>
-                
-                <div class="space-y-6">
-                    <div class="flex items-center justify-center mb-8">
-                        <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center">
-                            <span class="text-3xl text-blue-600" id="userInitials"></span>
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-8">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p class="mt-4 text-gray-600">Cargando perfil...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="hidden max-w-2xl mx-auto bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg" role="alert">
+            <div class="flex items-center mb-2">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                <strong class="font-bold">¡Error!</strong>
+            </div>
+            <p id="errorMessage" class="text-sm"></p>
+            <div class="mt-4 text-center">
+                <button onclick="retryLoad()" class="text-red-700 hover:text-red-800 underline">
+                    Intentar de nuevo
+                </button>
+            </div>
+        </div>
+
+        <!-- Profile Content -->
+        <div id="profileContent" class="hidden max-w-2xl mx-auto">
+            <!-- Profile Card -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-8">
+                    <h2 class="text-2xl font-bold text-gray-800 text-center mb-8">Mi Perfil</h2>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-center mb-8">
+                            <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center">
+                                <span class="text-3xl text-blue-600" id="userInitials"></span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Correo Electrónico
+                            </label>
+                            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" id="userEmail">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Fecha de registro
+                            </label>
+                            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" id="userCreatedAt">
+                            </div>
+                        </div>
+
+                        <div class="pt-6">
+                            <button id="logoutButton"
+                                class="w-full bg-red-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-700 transition duration-200 flex items-center justify-center">
+                                <span>Cerrar Sesión</span>
+                            </button>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Correo Electrónico
-                        </label>
-                        <div class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" id="userEmail">
-                            Cargando...
+            <!-- Statistics Card -->
+            <div class="mt-8 bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="p-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">Estadísticas</h3>
+                    
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="text-center">
+                            <p class="text-sm text-gray-500 mb-1">Compras realizadas</p>
+                            <p class="text-2xl font-bold text-blue-600" id="totalCompras">0</p>
                         </div>
-                    </div>
-
-                    <div class="pt-6">
-                        <button id="logoutButton"
-                            class="w-full bg-red-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-700 transition duration-200">
-                            Cerrar Sesión
-                        </button>
+                        <div class="text-center">
+                            <p class="text-sm text-gray-500 mb-1">Total gastado</p>
+                            <p class="text-2xl font-bold text-blue-600">$<span id="totalGastado">0.00</span></p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Aquí agregamos la librería de Cognito + el script de perfil -->
-    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.0.1/dist/amazon-cognito-identity.min.js"></script>
-    <script>
-        const poolData = {
-            UserPoolId: 'us-east-1_JosgMkDGE',  // User Pool ID de Cognito
-            ClientId: '4femhf9urmn6vfu07k19jdod5a' // Client ID de Cognito
-        };
+    <script type="module">
+        import { api } from './js/api.js';
 
-        const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+        // UI Elements
+        const loadingState = document.getElementById('loadingState');
+        const errorState = document.getElementById('errorState');
+        const profileContent = document.getElementById('profileContent');
+        const logoutButton = document.getElementById('logoutButton');
 
-        // Verificar si el usuario está autenticado
-        const token = localStorage.getItem('access_token');
-        if (!token) {
-            window.location.href = 'login.html';
+        function showError(message) {
+            loadingState.classList.add('hidden');
+            profileContent.classList.add('hidden');
+            errorState.classList.remove('hidden');
+            document.getElementById('errorMessage').textContent = message;
         }
 
-        // Obtener información del usuario
-        const user = userPool.getCurrentUser();
-        if (user) {
-            user.getSession((err, session) => {
-                if (err) {
-                    console.error('Error al obtener la sesión:', err);
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                // Obtener los atributos del usuario
-                user.getUserAttributes((err, attributes) => {
-                    if (err) {
-                        console.error('Error al obtener atributos:', err);
-                        return;
-                    }
-
-                    const email = attributes.find(attr => attr.getName() === 'email').getValue();
-                    document.getElementById('userEmail').textContent = email;
-                    
-                    // Mostrar iniciales del usuario
-                    const initials = email.charAt(0).toUpperCase();
-                    document.getElementById('userInitials').textContent = initials;
-                });
-            });
+        function showLoading() {
+            loadingState.classList.remove('hidden');
+            errorState.classList.add('hidden');
+            profileContent.classList.add('hidden');
         }
 
-        // Función para cerrar sesión
-        document.getElementById('logoutButton').addEventListener('click', () => {
-            if (user) {
-                user.signOut();
-                localStorage.removeItem('access_token');
+        function showContent() {
+            loadingState.classList.add('hidden');
+            errorState.classList.add('hidden');
+            profileContent.classList.remove('hidden');
+        }
+
+        async function loadUserProfile() {
+            if (!isAuthenticated()) {
+                window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                return;
+            }
+
+            showLoading();
+
+            try {
+                // Obtener datos del perfil
+                const userProfile = await api.getUserProfile();
+                
+                // Actualizar UI con datos del perfil
+                document.getElementById('userEmail').textContent = userProfile.email;
+                document.getElementById('userInitials').textContent = userProfile.email.charAt(0).toUpperCase();
+                document.getElementById('userCreatedAt').textContent = new Date(userProfile.createdAt).toLocaleDateString();
+
+                // Obtener estadísticas
+                const stats = await api.getUserStats();
+                document.getElementById('totalCompras').textContent = stats.totalCompras;
+                document.getElementById('totalGastado').textContent = stats.totalGastado.toFixed(2);
+
+                showContent();
+            } catch (error) {
+                console.error('Error al cargar el perfil:', error);
+                showError(error.message || 'Error al cargar el perfil del usuario');
+            }
+        }
+
+        // Función para reintentar la carga
+        window.retryLoad = loadUserProfile;
+
+        // Manejar cierre de sesión
+        logoutButton.addEventListener('click', async () => {
+            try {
+                logoutButton.disabled = true;
+                logoutButton.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Cerrando sesión...
+                `;
+
+                await logout();
                 window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error al cerrar sesión:', error);
+                logoutButton.disabled = false;
+                logoutButton.innerHTML = '<span>Cerrar Sesión</span>';
+                alert('Error al cerrar sesión: ' + error.message);
             }
         });
-    </script>
 
+        // Cargar perfil al iniciar
+        loadUserProfile();
+    </script>
 </body>
 
 </html> 

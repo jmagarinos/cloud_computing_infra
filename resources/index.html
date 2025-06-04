@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
     <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
+    <script type="module" src="js/api.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -25,11 +26,11 @@
         <div class="container mx-auto px-4 py-6">
             <div class="flex items-center justify-between">
                 <h1 class="text-3xl font-bold text-blue-600">LunchBox</h1>
-                <div class="header-right">
-                    <!-- El contenido se actualizará dinámicamente con auth.js -->
-                    <a href="login.html" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
-                        Iniciar Sesión
-                    </a>
+                <div class="header-right flex items-center space-x-4">
+                    <a href="mis-compras.html" class="text-gray-600 hover:text-gray-800">Mis Compras</a>
+                    <div id="authButtons">
+                        <!-- El contenido se actualizará dinámicamente con auth.js -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -51,35 +52,49 @@
             </div>
         </div>
 
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-8">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <p class="mt-4 text-gray-600">Cargando viandas...</p>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="hidden text-center py-8 text-red-600">
+            <p id="errorMessage"></p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-8">
+            <p class="text-gray-600">No se encontraron viandas</p>
+        </div>
+
         <!-- Viandas Grid -->
-        <div id="viandasGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <!-- Cards will be inserted here dynamically -->
+        <div id="viandasGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Las viandas se insertarán aquí dinámicamente -->
         </div>
     </div>
 
-    <script>
+    <script type="module">
+        import { api } from './js/api.js';
+
         const searchInput = document.getElementById('search');
         const viandasGrid = document.getElementById('viandasGrid');
-
-        // Sample data structure for viandas (you'll need to modify your backend to support this)
-        const sampleViandas = [
-            {
-                id: 1,
-                titulo: "Pollo al Curry",
-                imagen: "https://placehold.co/300x200",
-                descripcion: "Delicioso pollo al curry con arroz basmati",
-                precio: 12.99
-            },
-            // More viandas will be added here from the backend
-        ];
+        const loadingState = document.getElementById('loadingState');
+        const errorState = document.getElementById('errorState');
+        const emptyState = document.getElementById('emptyState');
+        let viandas = [];
 
         function createViandaCard(vianda) {
             return `
                 <div class="bg-white rounded-lg shadow-md overflow-hidden cursor-pointer transition-transform hover:scale-105"
                      onclick="window.location.href='vianda-detail.html?id=${vianda.id}'">
-                    <img src="${vianda.imagen}" alt="${vianda.titulo}" class="w-full h-48 object-cover">
+                    <img src="${vianda.imagen || `https://placehold.co/300x200?text=${encodeURIComponent(vianda.titulo)}`}" 
+                         alt="${vianda.titulo}" 
+                         class="w-full h-48 object-cover">
                     <div class="p-4">
-                        <h3 class="text-lg font-semibold text-gray-800">${vianda.titulo}</h3>
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">${vianda.titulo}</h3>
+                        <p class="text-gray-600 text-sm mb-2 line-clamp-2">${vianda.descripcion}</p>
+                        <p class="text-blue-600 font-bold">$${vianda.precio.toFixed(2)}</p>
                     </div>
                 </div>
             `;
@@ -87,47 +102,94 @@
 
         async function loadViandas() {
             try {
-                const response = await fetch('http://52.55.238.156:80/viandas');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const viandas = await response.json();
-                
-                // Transform the viandas data to include sample images and titles
-                const transformedViandas = viandas.map((vianda, index) => ({
-                    id: index + 1,
-                    titulo: vianda.descripcion.split('.')[0], // Use first sentence as title
-                    imagen: `https://placehold.co/300x200?text=Vianda+${index + 1}`,
-                    descripcion: vianda.descripcion,
-                    precio: (Math.random() * 20 + 10).toFixed(2) // Random price between 10 and 30
-                }));
+                // Mostrar estado de carga
+                loadingState.classList.remove('hidden');
+                errorState.classList.add('hidden');
+                emptyState.classList.add('hidden');
+                viandasGrid.classList.add('hidden');
 
-                viandasGrid.innerHTML = transformedViandas
-                    .slice(0, 16) // Limit to 16 cards
-                    .map(vianda => createViandaCard(vianda))
-                    .join('');
+                // Cargar viandas
+                viandas = await api.getViandas();
+
+                // Ocultar estado de carga
+                loadingState.classList.add('hidden');
+
+                if (!viandas || viandas.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                // Mostrar viandas
+                viandasGrid.classList.remove('hidden');
+                renderViandas(viandas);
             } catch (error) {
                 console.error("Error loading viandas:", error);
-                viandasGrid.innerHTML = `<div class="col-span-full text-center text-red-500">Error al cargar las viandas: ${error.message}</div>`;
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                errorState.querySelector('#errorMessage').textContent = `Error al cargar las viandas: ${error.message}`;
             }
         }
 
-        // Search functionality
-        searchInput.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const cards = viandasGrid.children;
+        function renderViandas(viandasToRender) {
+            if (viandasToRender.length === 0) {
+                viandasGrid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            viandasGrid.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            viandasGrid.innerHTML = viandasToRender.map(createViandaCard).join('');
+        }
+
+        // Búsqueda de viandas
+        searchInput.addEventListener('input', async (e) => {
+            const searchTerm = e.target.value.trim().toLowerCase();
             
-            Array.from(cards).forEach(card => {
-                const title = card.querySelector('h3').textContent.toLowerCase();
-                if (title.includes(searchTerm)) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+            if (searchTerm === '') {
+                renderViandas(viandas);
+                return;
+            }
+
+            try {
+                const filteredViandas = await api.buscarViandas({ query: searchTerm });
+                renderViandas(filteredViandas);
+            } catch (error) {
+                console.error('Error en la búsqueda:', error);
+                // Si falla la búsqueda en la API, hacemos filtrado local
+                const localFilteredViandas = viandas.filter(vianda => 
+                    vianda.titulo.toLowerCase().includes(searchTerm) ||
+                    vianda.descripcion.toLowerCase().includes(searchTerm)
+                );
+                renderViandas(localFilteredViandas);
+            }
         });
 
-        loadViandas(); // Load viandas on page load
+        // Cargar viandas al iniciar
+        loadViandas();
+
+        // Actualizar botones de autenticación
+        function updateAuthButtons() {
+            const authButtons = document.getElementById('authButtons');
+            if (isAuthenticated()) {
+                authButtons.innerHTML = `
+                    <a href="write_vianda.html" class="text-gray-600 hover:text-gray-800 mr-4">Crear Vianda</a>
+                    <a href="profile.html" class="text-gray-600 hover:text-gray-800 mr-4">Mi Perfil</a>
+                    <button onclick="logout()" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-200">
+                        Cerrar Sesión
+                    </button>
+                `;
+            } else {
+                authButtons.innerHTML = `
+                    <a href="login.html" class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-200">
+                        Iniciar Sesión
+                    </a>
+                `;
+            }
+        }
+
+        // Actualizar botones al cargar la página
+        document.addEventListener('DOMContentLoaded', updateAuthButtons);
     </script>
 </body>
 

@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
     <script src="js/config.js"></script>
     <script src="js/auth.js"></script>
+    <script type="module" src="js/api.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -37,127 +38,173 @@
         <div class="max-w-2xl mx-auto">
             <h1 class="text-3xl font-bold text-gray-800 mb-8">Crear Nueva Vianda</h1>
 
+            <!-- Error Alert -->
+            <div id="errorAlert" class="hidden mb-6 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <strong class="font-bold">¡Error!</strong>
+                <span class="block sm:inline" id="errorMessage"></span>
+            </div>
+
             <form id="createViandaForm" class="bg-white shadow-md rounded-lg p-6">
                 <div class="mb-6">
-                    <label for="titulo" class="block text-sm font-medium text-gray-700 mb-2">Título</label>
-                    <input type="text" id="titulo" name="titulo" required
+                    <label for="titulo" class="block text-sm font-medium text-gray-700 mb-2">
+                        Título <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="titulo" name="titulo" required minlength="3" maxlength="100"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <p class="mt-1 text-sm text-gray-500">Mínimo 3 caracteres, máximo 100</p>
                 </div>
 
                 <div class="mb-6">
-                    <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-                    <textarea id="descripcion" name="descripcion" rows="3" required
+                    <label for="descripcion" class="block text-sm font-medium text-gray-700 mb-2">
+                        Descripción <span class="text-red-500">*</span>
+                    </label>
+                    <textarea id="descripcion" name="descripcion" rows="3" required minlength="10" maxlength="500"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    <p class="mt-1 text-sm text-gray-500">Mínimo 10 caracteres, máximo 500</p>
                 </div>
 
                 <div class="mb-6">
-                    <label for="precio" class="block text-sm font-medium text-gray-700 mb-2">Precio</label>
-                    <input type="number" id="precio" name="precio" min="0" step="0.01" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <label for="precio" class="block text-sm font-medium text-gray-700 mb-2">
+                        Precio <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-2 text-gray-500">$</span>
+                        <input type="number" id="precio" name="precio" min="0.01" max="999999.99" step="0.01" required
+                            class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <p class="mt-1 text-sm text-gray-500">Valor mínimo $0.01, máximo $999,999.99</p>
                 </div>
 
                 <div class="mb-6">
                     <label for="imagen" class="block text-sm font-medium text-gray-700 mb-2">URL de la imagen</label>
-                    <input type="url" id="imagen" name="imagen"
+                    <input type="url" id="imagen" name="imagen" pattern="https?://.+"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <p class="mt-1 text-sm text-gray-500">URL completa comenzando con http:// o https://</p>
                 </div>
 
                 <div class="flex justify-end space-x-4">
                     <a href="index.html" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
                         Cancelar
                     </a>
-                    <button type="submit"
-                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                        Crear Vianda
+                    <button type="submit" id="submitButton"
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center">
+                        <span>Crear Vianda</span>
                     </button>
                 </div>
-  </form>
+            </form>
         </div>
     </div>
 
-  <script>
-        // Verificar que la configuración esté cargada
-        if (typeof apiConfig === 'undefined') {
-            console.error('Error: La configuración de la API no está disponible');
-            alert('Error: La configuración de la API no está disponible');
+    <script type="module">
+        import { api } from './js/api.js';
+
+        // UI Elements
+        const form = document.getElementById('createViandaForm');
+        const submitButton = document.getElementById('submitButton');
+        const errorAlert = document.getElementById('errorAlert');
+        const errorMessage = document.getElementById('errorMessage');
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorAlert.classList.remove('hidden');
+            window.scrollTo({ top: errorAlert.offsetTop - 20, behavior: 'smooth' });
         }
 
-        // Función para agregar un nuevo campo de ingrediente
-        function addIngrediente() {
-            const container = document.getElementById('ingredientesContainer');
-            const div = document.createElement('div');
-            div.className = 'flex gap-2';
-            div.innerHTML = `
-                <input type="text" class="ingrediente-input w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                <button type="button" onclick="removeIngrediente(this)" class="text-red-500 hover:text-red-700">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        function hideError() {
+            errorAlert.classList.add('hidden');
+        }
+
+        function setLoading(isLoading) {
+            submitButton.disabled = isLoading;
+            if (isLoading) {
+                submitButton.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                </button>
-            `;
-            container.appendChild(div);
-        }
-
-        // Función para eliminar un campo de ingrediente
-        function removeIngrediente(button) {
-            button.parentElement.remove();
-        }
-
-        // Manejar el envío del formulario
-        document.getElementById('createViandaForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-            // Verificar autenticación
-            if (!isAuthenticated()) {
-                alert('Debes iniciar sesión para crear una vianda');
-                window.location.href = 'login.html';
-                return;
+                    Creando...
+                `;
+            } else {
+                submitButton.innerHTML = '<span>Crear Vianda</span>';
             }
-
-            // Recolectar ingredientes
-            const ingredientes = Array.from(document.getElementsByClassName('ingrediente-input'))
-                .map(input => input.value.trim())
-                .filter(value => value !== '');
-
-            // Crear objeto con los datos del formulario
-            const viandaData = {
-                titulo: document.getElementById('titulo').value,
-                descripcion: document.getElementById('descripcion').value,
-                precio: parseFloat(document.getElementById('precio').value),
-                imagen: document.getElementById('imagen').value || null
-            };
-      
-            try {
-                const token = localStorage.getItem('access_token');
-                const response = await fetch(`${apiConfig.apiUrl}/viandas`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify(viandaData)
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                alert('Vianda creada correctamente');
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error('Error:', error);
-                alert('Error al crear la vianda: ' + error.message);
-            }
-        });
+        }
 
         // Verificar autenticación al cargar la página
         document.addEventListener('DOMContentLoaded', () => {
             if (!isAuthenticated()) {
-                window.location.href = 'login.html';
+                window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                return;
             }
-    });
-  </script>
+        });
+
+        // Validación en tiempo real
+        const inputs = form.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                hideError();
+                validateInput(input);
+            });
+
+            input.addEventListener('blur', () => {
+                validateInput(input);
+            });
+        });
+
+        function validateInput(input) {
+            const isValid = input.checkValidity();
+            if (!isValid) {
+                input.classList.add('border-red-500');
+                input.classList.remove('border-gray-300');
+            } else {
+                input.classList.remove('border-red-500');
+                input.classList.add('border-gray-300');
+            }
+        }
+
+        // Manejar el envío del formulario
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideError();
+
+            if (!isAuthenticated()) {
+                showError('Debes iniciar sesión para crear una vianda');
+                window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                return;
+            }
+
+            // Validar todos los campos
+            const formData = new FormData(form);
+            for (const [key, value] of formData.entries()) {
+                if (key !== 'imagen' && !value.trim()) {
+                    showError(`El campo ${key} es obligatorio`);
+                    return;
+                }
+            }
+
+            const precio = parseFloat(formData.get('precio'));
+            if (isNaN(precio) || precio <= 0) {
+                showError('El precio debe ser mayor a 0');
+                return;
+            }
+
+            const viandaData = {
+                titulo: formData.get('titulo').trim(),
+                descripcion: formData.get('descripcion').trim(),
+                precio: precio,
+                imagen: formData.get('imagen').trim() || null
+            };
+
+            try {
+                setLoading(true);
+                await api.createVianda(viandaData);
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message || 'Error al crear la vianda');
+                setLoading(false);
+            }
+        });
+    </script>
 </body>
 
 </html>
