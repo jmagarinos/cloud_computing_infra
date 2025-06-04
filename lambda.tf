@@ -94,7 +94,12 @@ resource "aws_lambda_function" "rds_init" {
         /tmp/rds_init_output.json
     EOT
   }
+
+  depends_on = [
+    aws_db_instance.postgres
+  ]
 }
+
 
 resource "aws_lambda_function" "cognito_post_confirmation_trigger" {
   function_name = "cognito-post-confirmation-trigger"
