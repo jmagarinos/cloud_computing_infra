@@ -25,7 +25,6 @@ locals {
 }
 
 
-
 # Single aws_lambda_function with for_each
 resource "aws_lambda_function" "vianda" {
   for_each = local.vianda_lambdas
@@ -42,11 +41,10 @@ resource "aws_lambda_function" "vianda" {
 
   environment {
     variables = {
-      DB_HOST              = aws_db_instance.postgres.address
-      DB_NAME              = "lunchbox"
-      DB_USER              = var.db_username
-      DB_PASSWORD          = var.db_password
-      COGNITO_USER_POOL_ID = aws_cognito_user_pool.main.id
+      DB_HOST     = aws_db_instance.postgres.address
+      DB_NAME     = "lunchbox"
+      DB_USER     = var.db_username
+      DB_PASSWORD = var.db_password
     }
   }
 
@@ -57,7 +55,7 @@ resource "aws_lambda_function" "vianda" {
     security_group_ids = [module.sg.security_group_id]
   }
   depends_on = [aws_cognito_user_pool.main]
-  layers     = [aws_lambda_layer_version.psycopg2_layer.arn, aws_lambda_layer_version.jwt_layer.arn]
+  layers     = [aws_lambda_layer_version.psycopg2_layer.arn]
 }
 
 resource "aws_lambda_function" "rds_init" {
@@ -112,16 +110,16 @@ resource "aws_lambda_layer_version" "psycopg2_layer" {
 }
 
 
-resource "aws_lambda_layer_version" "jwt_layer" {
-  layer_name          = "jwt-lunchbox"
-  compatible_runtimes = ["python3.12"]
-  description         = "jwt for Python 3.12"
+# resource "aws_lambda_layer_version" "jwt_layer" {
+#   layer_name          = "jwt-lunchbox"
+#   compatible_runtimes = ["python3.12"]
+#   description         = "jwt for Python 3.12"
 
-  filename = "${path.module}/layers/jwt_layer.zip"
+#   filename = "${path.module}/layers/jwt_layer.zip"
 
-  lifecycle {
-    create_before_destroy = true
-  }
-}
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
 
 data "aws_caller_identity" "current" {}
