@@ -36,14 +36,6 @@ def get_cognito_user_id(event):
         print(f"Error al obtener el ID de usuario: {str(e)}")
         return None
 
-def get_cors_headers():
-    """Return CORS headers for all responses"""
-    return {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS'
-    }
-
 def lambda_handler(event, context):
     try:
         # Verificar autenticación
@@ -51,7 +43,6 @@ def lambda_handler(event, context):
         if not user_id:
             return {
                 'statusCode': 401,
-                'headers': get_cors_headers(),
                 'body': json.dumps({
                     'error': 'No autorizado',
                     'detalles': 'Se requiere autenticación'
@@ -64,7 +55,6 @@ def lambda_handler(event, context):
         if not vianda_id:
             return {
                 'statusCode': 400,
-                'headers': get_cors_headers(),
                 'body': json.dumps({
                     'error': 'Datos inválidos',
                     'detalles': 'Se requiere el ID de la vianda'
@@ -89,7 +79,6 @@ def lambda_handler(event, context):
         if not result:
             return {
                 'statusCode': 404,
-                'headers': get_cors_headers(),
                 'body': json.dumps({
                     'error': 'Vianda no encontrada'
                 })
@@ -98,7 +87,6 @@ def lambda_handler(event, context):
         if result[0] != user_id:
             return {
                 'statusCode': 403,
-                'headers': get_cors_headers(),
                 'body': json.dumps({
                     'error': 'No autorizado',
                     'detalles': 'Solo puedes eliminar tus propias viandas'
@@ -114,7 +102,6 @@ def lambda_handler(event, context):
         
         return {
             'statusCode': 200,
-            'headers': get_cors_headers(),
             'body': json.dumps({
                 'message': 'Vianda eliminada correctamente'
             })
@@ -123,7 +110,6 @@ def lambda_handler(event, context):
     except Exception as e:
         return {
             'statusCode': 500,
-            'headers': get_cors_headers(),
             'body': json.dumps({
                 'error': 'Error al eliminar la vianda',
                 'detalles': str(e)

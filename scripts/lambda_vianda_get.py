@@ -4,14 +4,6 @@ import psycopg2
 import jwt
 from urllib.request import urlopen
 
-def get_cors_headers():
-    """Return CORS headers for all responses"""
-    return {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token',
-        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS'
-    }
-
 def get_cognito_user_id(event):
     try:
         auth_header = event.get('headers', {}).get('Authorization')
@@ -51,7 +43,6 @@ def lambda_handler(event, context):
         if not user_id:
             return {
                 'statusCode': 401,
-                'headers': get_cors_headers(),
                 'body': json.dumps({
                     'error': 'No autorizado',
                     'detalles': 'Se requiere autenticación'
@@ -64,7 +55,6 @@ def lambda_handler(event, context):
         if not vianda_id:
             return {
                 'statusCode': 400,
-                'headers': get_cors_headers(),
                 'body': json.dumps({
                     'error': 'Datos inválidos',
                     'detalles': 'Se requiere el ID de la vianda'
@@ -98,7 +88,6 @@ def lambda_handler(event, context):
         if not vianda:
             return {
                 'statusCode': 404,
-                'headers': get_cors_headers(),
                 'body': json.dumps({
                     'error': 'Vianda no encontrada'
                 })
@@ -124,16 +113,14 @@ def lambda_handler(event, context):
         
         return {
             'statusCode': 200,
-            'headers': get_cors_headers(),
             'body': json.dumps(vianda_data)
         }
         
     except Exception as e:
         return {
             'statusCode': 500,
-            'headers': get_cors_headers(),
             'body': json.dumps({
                 'error': 'Error al obtener la vianda',
                 'detalles': str(e)
             })
-        }
+        } 
