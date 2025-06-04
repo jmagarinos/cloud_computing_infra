@@ -162,3 +162,116 @@ resource "aws_lambda_layer_version" "psycopg2_layer" {
 # }
 
 data "aws_caller_identity" "current" {}
+
+# Lambda para procesar imágenes en alta resolución
+resource "aws_lambda_function" "process_image_high_res" {
+  filename         = "${path.module}/resources/lambda/process_image_high_res.zip"
+  function_name    = "process-image-high-res-${var.environment}"
+  role            = aws_iam_role.lambda_role.arn
+  handler         = "index.handler"
+  runtime         = "nodejs18.x"
+  timeout         = 30
+  memory_size     = 256
+
+  environment {
+    variables = {
+      BUCKET_NAME = aws_s3_bucket.website.id
+      HIGH_RES_PREFIX = "images/high-res"
+    }
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.lambda_logs,
+    aws_cloudwatch_log_group.process_image_high_res
+  ]
+}
+
+# CloudWatch log group para la lambda de alta resolución
+resource "aws_cloudwatch_log_group" "process_image_high_res" {
+  name              = "/aws/lambda/process-image-high-res-${var.environment}"
+  retention_in_days = 14
+}
+
+# Lambda para procesar imágenes en baja resolución
+resource "aws_lambda_function" "process_image_low_res" {
+  filename         = "${path.module}/resources/lambda/process_image_low_res.zip"
+  function_name    = "process-image-low-res-${var.environment}"
+  role            = aws_iam_role.lambda_role.arn
+  handler         = "index.handler"
+  runtime         = "nodejs18.x"
+  timeout         = 30
+  memory_size     = 256
+
+  environment {
+    variables = {
+      BUCKET_NAME = aws_s3_bucket.website.id
+      LOW_RES_PREFIX = "images/low-res"
+    }
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.lambda_logs,
+    aws_cloudwatch_log_group.process_image_low_res
+  ]
+}
+
+# CloudWatch log group para la lambda de baja resolución
+resource "aws_cloudwatch_log_group" "process_image_low_res" {
+  name              = "/aws/lambda/process-image-low-res-${var.environment}"
+  retention_in_days = 14
+}
+
+# Permisos para que las Lambdas puedan ser invocadas por SNS
+resource "aws_lambda_permission" "sns_high_res" {
+  statement_id  = "AllowSNSInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.process_image_high_res.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = aws_sns_topic.image_processing.arn
+}
+
+resource "aws_lambda_permission" "sns_low_res" {
+  statement_id  = "AllowSNSInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.process_image_low_res.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = aws_sns_topic.image_processing.arn
+}
+
+# Suscribir las Lambdas al SNS topic
+resource "aws_sns_topic_subscription" "high_res" {
+  topic_arn = aws_sns_topic.image_processing.arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.process_image_high_res.arn
+}
+
+resource "aws_sns_topic_subscription" "low_res" {
+  topic_arn = aws_sns_topic.image_processing.arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.process_image_low_res.arn
+}
+
+# Política IAM para permitir que las Lambdas accedan a S3 y procesen imágenes
+resource "aws_iam_role_policy" "lambda_s3_image_policy" {
+  name = "lambda_s3_image_policy"
+  role = aws_iam_role.lambda_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.website.arn,
+          "${aws_s3_bucket.website.arn}/*"
+        ]
+      }
+    ]
+  })
+}

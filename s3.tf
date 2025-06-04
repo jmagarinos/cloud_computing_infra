@@ -176,3 +176,31 @@ resource "aws_s3_object" "write_vianda" {
   content_type = "text/html"
   etag         = filemd5("${path.module}/resources/write_vianda.html")
 }
+
+# Configuración de notificación S3 para procesar imágenes
+resource "aws_s3_bucket_notification" "bucket_notification" {
+  bucket = aws_s3_bucket.website.id
+
+  topic {
+    topic_arn     = aws_sns_topic.image_processing.arn
+    events        = ["s3:ObjectCreated:*"]
+    filter_prefix = "uploads/"
+    filter_suffix = ".jpg"
+  }
+
+  topic {
+    topic_arn     = aws_sns_topic.image_processing.arn
+    events        = ["s3:ObjectCreated:*"]
+    filter_prefix = "uploads/"
+    filter_suffix = ".jpeg"
+  }
+
+  topic {
+    topic_arn     = aws_sns_topic.image_processing.arn
+    events        = ["s3:ObjectCreated:*"]
+    filter_prefix = "uploads/"
+    filter_suffix = ".png"
+  }
+
+  depends_on = [aws_sns_topic_policy.image_processing]
+}

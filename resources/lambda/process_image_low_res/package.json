@@ -1,0 +1,9 @@
+{
+  "name": "process-image-low-res",
+  "version": "1.0.0",
+  "description": "Procesa imágenes en baja resolución",
+  "main": "index.js",
+  "dependencies": {
+    "sharp": "^0.32.6"
+  }
+} 
