@@ -1,3 +1,7 @@
+# -----------------------------
+# Private subnet creation
+# -----------------------------
+
 resource "aws_subnet" "private" {
   for_each = var.private_subnet_cidrs
 
@@ -20,6 +24,10 @@ resource "aws_db_subnet_group" "rds" {
     Name = format("rds-subnet-group-%s", var.environment)
   }
 }
+
+# -----------------------------
+# Public subnet creation
+# -----------------------------
 
 resource "aws_subnet" "public" {
   vpc_id                  = module.vpc.vpc_id

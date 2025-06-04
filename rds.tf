@@ -1,3 +1,7 @@
+# -----------------------------
+# Postgres configuration
+# -----------------------------
+
 resource "aws_db_instance" "postgres" {
   identifier                          = "lunchbox-postgres"
   engine                              = "postgres"

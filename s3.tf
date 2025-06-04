@@ -2,7 +2,7 @@
 # S3 Bucket
 # -----------------------------
 resource "aws_s3_bucket" "website" {
-  bucket = "website-lunchbox-dev-${formatdate("YYYYMMDDHHmmss", timestamp())}-x42f9"
+  bucket        = "website-lunchbox-dev-${formatdate("YYYYMMDDHHmmss", timestamp())}-x42f9"
   force_destroy = true
 
   # lifecycle {
@@ -87,7 +87,6 @@ resource "aws_s3_object" "index" {
   etag         = filemd5("${path.module}/resources/index.html")
 }
 
-# TODO: Habría que hacer que esto sea dependiendo el id de cada vianda
 resource "aws_s3_object" "vianda_detail" {
   bucket       = aws_s3_bucket.website.id
   key          = "vianda-detail.html"
