@@ -33,22 +33,53 @@ code/
 ├── api_gateway.tf
 ├── cognito.tf
 ├── ec2.tf
+├── internet_gateway.tf
 ├── lambda.tf
+├── outputs.tf
+├── provider.tf
 ├── rds.tf
 ├── s3.tf
+├── scripts/                   # Lambdas y script para empaquetarlas
+│   ├── lambda_vianda_create.py
+│   ├── lambda_vianda_list.py
+│   ├── lambda_vianda_get.py
+│   ├── lambda_vianda_delete.py
+│   ├── lambda_vianda_buy.py
+│   ├── lambda_rds_init.py
+│   ├── lambda_cognito_post_confirmation.py
+│   ├── lambda_image_processor.py
+│   └── create_lambda_zips.sh
+├── layers/                    # Layers (psycopg2, PIL, jwt)
+│   ├── psycopg2-layer.zip
+│   ├── PIL_layer.zip
+│   └── jwt_layer.zip
+├── modules/
+│   └── vpc/                   # Módulo para VPC
+│       ├── main.tf
+│       ├── outputs.tf
+│       └── variables.tf
+├── resources/                 # Archivos estáticos HTML + JS + SQL
+│   ├── index.html
+│   ├── login.html
+│   ├── signup.html
+│   ├── profile.html
+│   ├── mis-compras.html
+│   ├── write_vianda.html
+│   ├── vianda-detail.html
+│   ├── error.html
+│   ├── confirm.html
+│   ├── db_init.sql
+│   ├── init_db.sh
+│   └── js/
+│       ├── auth.js
+│       ├── config.js
+│       └── api.js
 ├── securitygroup.tf
 ├── subnet.tf
-├── internet_gateway.tf
-├── variables.tf
-├── outputs.tf
 ├── terraform.tfvars
+├── variables.tf
 ├── versions.tf
-├── provider.tf
-├── scripts/ # Lambdas y script para empaquetarlas
-├── layers/ # Layers (psycopg2, PIL, jwt)
-├── modules/vpc/ # Módulo para VPC
-├── resources/ # Archivos estáticos HTML + JS + SQL
-└── Diagrama.jpeg # Diagrama del proyecto
+└── Diagrama.jpeg              # Diagrama del proyecto
 
 ---
 
