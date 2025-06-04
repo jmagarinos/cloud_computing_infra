@@ -5,6 +5,9 @@ import psycopg2
 def lambda_handler(event, context):
     user_attributes = event['request']['userAttributes']
     
+    # Get the Cognito user ID (sub)
+    cognito_sub = event['userName']  # This is the Cognito sub/user ID
+    
     email = user_attributes.get('email')
     nombre = user_attributes.get('given_name')
     apellido = user_attributes.get('family_name')
@@ -31,20 +34,21 @@ def lambda_handler(event, context):
         cur = conn.cursor()
 
         # Check if user already exists to prevent duplicate entries
-        cur.execute("SELECT id FROM persona WHERE mail = %s", (email,))
+        cur.execute("SELECT id FROM persona WHERE mail = %s OR cognito_sub = %s", (email, cognito_sub))
         if cur.fetchone():
-            print(f"User with email {email} already exists in persona table.")
+            print(f"User with email {email} or cognito_sub {cognito_sub} already exists in persona table.")
             return event # User already exists, successful completion for Cognito
 
+        # Include cognito_sub in the insert
         sql = """
-            INSERT INTO persona (nombre, apellido, telefono, direccion, mail)
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO persona (nombre, apellido, telefono, direccion, mail, cognito_sub)
+            VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING id;
         """
-        cur.execute(sql, (nombre, apellido, telefono, direccion, email))
+        cur.execute(sql, (nombre, apellido, telefono, direccion, email, cognito_sub))
         persona_id = cur.fetchone()[0]
         conn.commit()
-        print(f"Successfully inserted user {email} into persona table with ID {persona_id}.")
+        print(f"Successfully inserted user {email} with cognito_sub {cognito_sub} into persona table with ID {persona_id}.")
 
     except psycopg2.Error as db_error:
         print(f"Database error for email {email}: {str(db_error)}")

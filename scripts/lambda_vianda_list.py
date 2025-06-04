@@ -7,20 +7,28 @@ def lambda_handler(event, context):
         print("Lambda LIST iniciada")
         
         # Obtener email del usuario autenticado (por si queremos loguear quién hace la consulta)
-        claims = event['requestContext']['authorizer']['claims']
-        email = claims.get('email')
+        print(f"Evento recibido: {json.dumps(event, indent=2)}")
         
-        if not email:
-            print("No se encontró el email en claims")
+        # Fix: Access claims from the correct nested path
+        authorizer = event.get('requestContext', {}).get('authorizer', {})
+        jwt_info = authorizer.get('jwt', {})
+        claims = jwt_info.get('claims', {})
+        
+        # Extract user information from claims
+        cognito_sub = claims.get('sub')  # Cognito user ID
+        username = claims.get('username')
+        
+        if not cognito_sub:
+            print("No se encontró el cognito_sub en claims")
             return {
                 'statusCode': 401,
                 'body': json.dumps({
                     'error': 'No autorizado',
-                    'detalles': 'No se encontró el email en el token'
+                    'detalles': 'No se encontró el cognito_sub en el token'
                 })
             }
         
-        print(f"Email autenticado: {email}")
+        print(f"Cognito Sub autenticado: {cognito_sub}")
         
         # Conexión a la base de datos
         print("Conectando a la base de datos")
@@ -33,6 +41,28 @@ def lambda_handler(event, context):
         )
         
         cur = conn.cursor()
+        
+        # Get user info from database
+        user_query = """
+            SELECT id, nombre, apellido, mail, telefono, direccion 
+            FROM persona 
+            WHERE cognito_sub = %s
+        """
+        cur.execute(user_query, (cognito_sub,))
+        user_info = cur.fetchone()
+        
+        if not user_info:
+            print(f"No se encontró el usuario con cognito_sub: {cognito_sub}")
+            return {
+                'statusCode': 404,
+                'body': json.dumps({
+                    'error': 'Usuario no encontrado',
+                    'detalles': 'No se encontró el usuario en la base de datos'
+                })
+            }
+        
+        user_id, nombre, apellido, email, telefono, direccion = user_info
+        print(f"Usuario encontrado: {nombre} {apellido} ({email})")
         
         # Obtener todas las viandas disponibles
         query = """

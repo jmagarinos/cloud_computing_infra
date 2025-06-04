@@ -17,6 +17,7 @@ def lambda_handler(event, context):
 
 
         # Crear tabla persona
+        cur.execute("DROP TABLE IF EXISTS persona;")
         cur.execute("""
             CREATE TABLE IF NOT EXISTS persona (
                 id SERIAL PRIMARY KEY,
@@ -24,11 +25,13 @@ def lambda_handler(event, context):
                 apellido VARCHAR(100) NOT NULL,
                 telefono VARCHAR(20) NOT NULL,
                 direccion VARCHAR(200) NOT NULL,
-                mail VARCHAR(100) NOT NULL UNIQUE
+                mail VARCHAR(100) NOT NULL UNIQUE,
+                cognito_sub VARCHAR(255) UNIQUE
             );
         """)
 
         # Crear tabla vianda
+        cur.execute("DROP TABLE IF EXISTS vianda;")
         cur.execute("""
             CREATE TABLE IF NOT EXISTS vianda (
                 id SERIAL PRIMARY KEY,
@@ -42,6 +45,7 @@ def lambda_handler(event, context):
         """)
 
         # Crear tabla ventas
+        cur.execute("DROP TABLE IF EXISTS ventas;")
         cur.execute("""
             CREATE TABLE IF NOT EXISTS ventas (
                 id SERIAL PRIMARY KEY,

@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS persona (
     apellido VARCHAR(100) NOT NULL,
     telefono VARCHAR(20) NOT NULL,
     direccion VARCHAR(200) NOT NULL,
-    mail VARCHAR(100) NOT NULL UNIQUE
+    mail VARCHAR(100) NOT NULL UNIQUE,
+    cognito_sub VARCHAR(255) UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS vianda (

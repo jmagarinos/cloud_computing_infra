@@ -42,6 +42,9 @@ resource "aws_apigatewayv2_route" "get_viandas" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "GET /viandas"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_list_integration.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_list_integration" {
@@ -134,4 +137,16 @@ resource "aws_apigatewayv2_stage" "vianda_api_stage" {
   api_id      = aws_apigatewayv2_api.vianda_api.id
   name        = "dev"
   auto_deploy = true
+}
+
+resource "aws_apigatewayv2_authorizer" "cognito_authorizer" {
+  api_id           = aws_apigatewayv2_api.vianda_api.id
+  authorizer_type  = "JWT"
+  identity_sources = ["$request.header.Authorization"]
+  name             = "cognito-authorizer"
+
+  jwt_configuration {
+    audience = [aws_cognito_user_pool_client.web_client.id]
+    issuer   = "https://cognito-idp.us-east-1.amazonaws.com/${aws_cognito_user_pool.main.id}"
+  }
 }
