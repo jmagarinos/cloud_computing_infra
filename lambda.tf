@@ -56,10 +56,8 @@ resource "aws_lambda_function" "vianda" {
     security_group_ids = [module.sg.security_group_id]
   }
 
-  layers = [aws_lambda_layer_version.psycopg2_layer.arn]
+  layers = [aws_lambda_layer_version.psycopg2_layer.arn, aws_lambda_layer_version.jwt_layer.arn]
 }
-
-
 
 resource "aws_lambda_layer_version" "psycopg2_layer" {
   layer_name          = "psycopg2-lunchbox"
@@ -67,6 +65,19 @@ resource "aws_lambda_layer_version" "psycopg2_layer" {
   description         = "psycopg2-binary for Python 3.12"
 
   filename = "${path.module}/layers/psycopg2-layer.zip"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+
+resource "aws_lambda_layer_version" "jwt_layer" {
+  layer_name          = "jwt-lunchbox"
+  compatible_runtimes = ["python3.12"]
+  description         = "jwt for Python 3.12"
+
+  filename = "${path.module}/layers/jwt_layer.zip"
 
   lifecycle {
     create_before_destroy = true
