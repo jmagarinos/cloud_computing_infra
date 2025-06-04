@@ -1,7 +1,11 @@
 // Clase principal para manejar las llamadas a la API
 class LunchBoxAPI {
     constructor(baseUrl) {
-        this.baseUrl = baseUrl;
+        if (baseUrl.endsWith('/')) {
+            this.baseUrl = baseUrl.slice(0, -1);
+        } else {
+            this.baseUrl = baseUrl;
+        }
     }
 
     // Obtener el token de autenticación
@@ -188,4 +192,4 @@ class LunchBoxAPI {
 }
 
 // Exportar la clase para su uso
-export const api = new LunchBoxAPI(apiConfig.apiUrl); 
+export const api = new LunchBoxAPI(apiConfig.apiUrl);
