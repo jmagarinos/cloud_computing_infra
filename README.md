@@ -10,6 +10,10 @@ Este proyecto define y despliega la infraestructura backend completa para la app
 
 ---
 
+## Diagrama de Arquitectura
+
+![Diagrama de Arquitectura](diagrams/arquitectura.png)
+
 ## Infraestructura
 
 La infraestructura se define completamente en **Terraform**.
@@ -123,6 +127,7 @@ O configurar con:
 ```sh
 aws configure
 ```
+
 2. Empaquetar Lambdas
 
 ```sh
@@ -150,4 +155,3 @@ terraform plan
 ```sh
 terraform apply
 ```
-
