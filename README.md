@@ -67,7 +67,8 @@ La infraestructura se define completamente en **Terraform**.
 ├── terraform.tfvars          # Variables de Terraform
 ├── variables.tf              # Definición de variables
 ├── versions.tf               # Versiones de providers
-└── Diagrama.jpeg             # Diagrama de arquitectura```
+└── Diagrama.jpeg             # Diagrama de arquitectura
+```
 
 ---
 
