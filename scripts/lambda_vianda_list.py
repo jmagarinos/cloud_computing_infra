@@ -83,10 +83,11 @@ def lambda_handler(event, context):
         
         # Obtener todas las viandas disponibles
         query = """
-            SELECT v.id, v.titulo, v.descripcion, v.precio, v.imagen,
+            SELECT v.id, v.titulo, v.descripcion, v.precio, v.imagen, v.disponible,
                    p.nombre as creador_nombre, p.apellido as creador_apellido
             FROM vianda v
             JOIN persona p ON v.fk_dueno = p.id
+            WHERE v.disponible = true
             ORDER BY v.id DESC
         """
         
@@ -103,9 +104,10 @@ def lambda_handler(event, context):
                 'descripcion': vianda[2],
                 'precio': float(vianda[3]),
                 'imagen': vianda[4],
+                'disponible': vianda[5],
                 'creador': {
-                    'nombre': vianda[5],
-                    'apellido': vianda[6]
+                    'nombre': vianda[6],
+                    'apellido': vianda[7]
                 }
             })
         

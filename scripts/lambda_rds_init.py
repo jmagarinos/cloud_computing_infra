@@ -45,6 +45,7 @@ def lambda_handler(event, context):
             );
         """)
 
+
         # Crear tabla ventas
         cur.execute("DROP TABLE IF EXISTS ventas;")
         cur.execute("""

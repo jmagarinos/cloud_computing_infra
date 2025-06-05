@@ -109,8 +109,9 @@
                 viandasGrid.classList.add('hidden');
 
                 // Cargar viandas
-                viandas = await api.getViandas();
-                console.log('viandas:', viandas);
+                const response = await api.getViandas();
+                console.log('viandas:', response);
+                viandas = response.viandas; // Extraer el array de viandas de la respuesta
                 // Ocultar estado de carga
                 loadingState.classList.add('hidden');
 
