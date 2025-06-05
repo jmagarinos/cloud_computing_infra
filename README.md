@@ -12,7 +12,7 @@ Este proyecto define y despliega la infraestructura backend completa para la app
 
 ## Diagrama de Arquitectura
 
-![Diagrama de Arquitectura](cloud_computing_infra/diagrams/arquitectura.png)
+![Diagrama de Arquitectura](../diagrams/arquitectura.png)
 
 ## Infraestructura
 
