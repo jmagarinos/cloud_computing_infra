@@ -30,56 +30,44 @@ La infraestructura se define completamente en **Terraform**.
 ## Estructura del proyecto
 
 code/
-├── api_gateway.tf
-├── cognito.tf
-├── ec2.tf
-├── internet_gateway.tf
-├── lambda.tf
-├── outputs.tf
-├── provider.tf
-├── rds.tf
-├── s3.tf
-├── scripts/                   # Lambdas y script para empaquetarlas
-│   ├── lambda_vianda_create.py
-│   ├── lambda_vianda_list.py
-│   ├── lambda_vianda_get.py
-│   ├── lambda_vianda_delete.py
-│   ├── lambda_vianda_buy.py
-│   ├── lambda_rds_init.py
-│   ├── lambda_cognito_post_confirmation.py
-│   ├── lambda_image_processor.py
-│   └── create_lambda_zips.sh
-├── layers/                    # Layers (psycopg2, PIL, jwt)
-│   ├── psycopg2-layer.zip
-│   ├── PIL_layer.zip
-│   └── jwt_layer.zip
+├── api_gateway.tf            # Configuración de API Gateway
+├── cognito.tf                # Configuración de Amazon Cognito
+├── ec2.tf                    # Configuración de instancias EC2
+├── internet_gateway.tf       # Configuración de Internet Gateway
+├── lambda.tf                 # Configuración general de Lambdas
+├── outputs.tf                # Outputs de Terraform
+├── provider.tf               # Configuración del provider AWS
+├── rds.tf                    # Configuración de RDS (PostgreSQL)
+├── s3.tf                     # Configuración de buckets S3
+├── scripts/                  # Lambdas y script para empaquetarlas
+│   ├── lambda_vianda_*.py    # Funciones Lambda para CRUD de viandas
+│   ├── lambda_rds_init.py    # Lambda para inicializar RDS
+│   ├── lambda_cognito_post_confirmation.py # Lambda post-confirmación
+│   ├── lambda_image_processor.py # Procesamiento de imágenes
+│   └── create_lambda_zips.sh # Script para crear paquetes Lambda
+├── layers/                   # Capas Lambda (psycopg2, PIL, jwt)
+│   ├── psycopg2-layer.zip    # Capa para PostgreSQL
+│   ├── PIL_layer.zip         # Capa para procesamiento de imágenes
+│   └── jwt_layer.zip         # Capa para JWT
 ├── modules/
-│   └── vpc/                   # Módulo para VPC
-│       ├── main.tf
-│       ├── outputs.tf
-│       └── variables.tf
-├── resources/                 # Archivos estáticos HTML + JS + SQL
-│   ├── index.html
-│   ├── login.html
-│   ├── signup.html
-│   ├── profile.html
-│   ├── mis-compras.html
-│   ├── write_vianda.html
-│   ├── vianda-detail.html
-│   ├── error.html
-│   ├── confirm.html
-│   ├── db_init.sql
-│   ├── init_db.sh
-│   └── js/
-│       ├── auth.js
-│       ├── config.js
-│       └── api.js
-├── securitygroup.tf
-├── subnet.tf
-├── terraform.tfvars
-├── variables.tf
-├── versions.tf
-└── Diagrama.jpeg              # Diagrama del proyecto
+│   └── vpc/                  # Módulo para VPC
+│       ├── main.tf           # Configuración principal de VPC
+│       ├── outputs.tf        # Outputs del módulo
+│       └── variables.tf     # Variables del módulo
+├── resources/                # Archivos estáticos y scripts
+│   ├──*.html                # Páginas web estáticas
+│   ├── db_init.sql           # Script SQL para inicializar DB
+│   ├── init_db.sh            # Script para inicializar base de datos
+│   └── js/                   # JavaScript para frontend
+│       ├── auth.js           # Autenticación con Cognito
+│       ├── config.js         # Configuración
+│       └── api.js            # Llamadas a API Gateway
+├── securitygroup.tf          # Security Groups
+├── subnet.tf                 # Configuración de subnets
+├── terraform.tfvars          # Variables de Terraform
+├── variables.tf              # Definición de variables
+├── versions.tf               # Versiones de providers
+└── Diagrama.jpeg             # Diagrama de arquitectura
 
 ---
 
