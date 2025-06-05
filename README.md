@@ -111,31 +111,43 @@ El schema de la base se encuentra en:
 
 resources/db_init.sql
 
-1️⃣ Configurar credenciales de AWS
+1. Configurar credenciales de AWS
 Opcional: podés usar el script helper:
 
+```sh
 ./check_creds.sh
+```
+
 O configurar con:
 
+```sh
 aws configure
+```
+2. Empaquetar Lambdas
 
-2️⃣ Inicializar Terraform
-
-terraform init
-
-3️⃣ Planificar cambios
-
-terraform plan
-
-4️⃣ Aplicar cambios
-
-terraform apply
-
-5️⃣ Empaquetar Lambdas
-
+```sh
 ./scripts/create_lambda_zips.sh
+```
 
-6️⃣ Subir ZIPs a Lambda
 Una vez empaquetados, los ZIPs se encuentran en:
 
 /scripts/*.zip
+
+3. Inicializar Terraform
+
+```sh
+terraform init
+```
+
+4. Planificar cambios
+
+```sh
+terraform plan
+```
+
+5. Aplicar cambios
+
+```sh
+terraform apply
+```
+
