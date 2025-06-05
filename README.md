@@ -71,7 +71,7 @@ La infraestructura se define completamente en **Terraform**.
 
 ---
 
-## 🚀 Lambdas
+## Lambdas
 
 **Lógicas principales:**
 
@@ -86,7 +86,7 @@ La infraestructura se define completamente en **Terraform**.
 
 ---
 
-## 🌍 Frontend
+## Frontend
 
 El sitio web estático se encuentra en `resources/`:
 
