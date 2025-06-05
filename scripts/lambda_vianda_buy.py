@@ -1,5 +1,6 @@
 import json
 import os
+from unittest import result
 import psycopg2
 from datetime import datetime
 import jwt
@@ -7,31 +8,45 @@ from urllib.request import urlopen
 
 def get_cognito_user_id(event):
     try:
-        auth_header = event.get('headers', {}).get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return None
+        print("Lambda CREATE iniciada")
+        print(f"Evento recibido: {json.dumps(event, indent=2)}")
         
-        token = auth_header.split(' ')[1]
-        region = os.environ.get('COGNITO_REGION', 'us-east-1')
-        user_pool_id = os.environ.get('COGNITO_USER_POOL_ID')
+        # Verificar si tenemos el contexto de autorización
+        request_context = event.get('requestContext', {})
+        print(f"Request Context: {json.dumps(request_context, indent=2)}")
         
-        if not user_pool_id:
-            raise Exception("COGNITO_USER_POOL_ID no está configurado")
-            
-        keys_url = f'https://cognito-idp.{region}.amazonaws.com/{user_pool_id}/.well-known/jwks.json'
-        response = urlopen(keys_url)
-        keys = json.loads(response.read())['keys']
+        authorizer = request_context.get('authorizer', {})
+        print(f"Authorizer: {json.dumps(authorizer, indent=2)}")
         
-        headers = jwt.get_unverified_header(token)
-        key = next((k for k in keys if k['kid'] == headers['kid']), None)
+        jwt_info = authorizer.get('jwt', {})
+        print(f"JWT Info: {json.dumps(jwt_info, indent=2)}")
         
-        if not key:
-            raise Exception("No se encontró la clave para verificar el token")
-            
-        public_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(key))
-        payload = jwt.decode(token, public_key, algorithms=['RS256'])
+        claims = jwt_info.get('claims', {})
+        print(f"Claims: {json.dumps(claims, indent=2)}")
         
-        return payload.get('sub')
+        # Extract user information from claims
+        cognito_sub = claims.get('sub')  # Cognito user ID
+        username = claims.get('username')
+        email = claims.get('email')
+        
+        print(f"Cognito Sub: {cognito_sub}")
+        print(f"Username: {username}")
+        print(f"Email: {email}")
+
+        conn = psycopg2.connect(
+            host=os.environ['DB_HOST'],
+            database=os.environ['DB_NAME'],
+            user=os.environ['DB_USER'],
+            password=os.environ['DB_PASSWORD'],
+            port=5432
+        )
+        
+        cur = conn.cursor()
+        cur.execute("SELECT id FROM persona WHERE cognito_sub = %s", (cognito_sub,))
+        result = cur.fetchone()
+        cur.close()
+        conn.close()
+        return result[0] if result else None
         
     except Exception as e:
         print(f"Error al obtener el ID de usuario: {str(e)}")

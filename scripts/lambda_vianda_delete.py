@@ -5,22 +5,45 @@ import psycopg2
 def lambda_handler(event, context):
     try:
         print("Lambda DELETE iniciada")
+        print(f"Evento recibido: {json.dumps(event, indent=2)}")
         
-        # Obtener email del usuario autenticado
-        claims = event['requestContext']['authorizer']['claims']
+        # Verificar si tenemos el contexto de autorización
+        request_context = event.get('requestContext', {})
+        print(f"Request Context: {json.dumps(request_context, indent=2)}")
+        
+        authorizer = request_context.get('authorizer', {})
+        print(f"Authorizer: {json.dumps(authorizer, indent=2)}")
+        
+        jwt_info = authorizer.get('jwt', {})
+        print(f"JWT Info: {json.dumps(jwt_info, indent=2)}")
+        
+        claims = jwt_info.get('claims', {})
+        print(f"Claims: {json.dumps(claims, indent=2)}")
+        
+        # Extract user information from claims
+        cognito_sub = claims.get('sub')  # Cognito user ID
+        username = claims.get('username')
         email = claims.get('email')
         
-        if not email:
-            print("No se encontró el email en claims")
-            return {
-                'statusCode': 401,
-                'body': json.dumps({
-                    'error': 'No autorizado',
-                    'detalles': 'No se encontró el email en el token'
-                })
-            }
+        print(f"Cognito Sub: {cognito_sub}")
+        print(f"Username: {username}")
+        print(f"Email: {email}")
         
         print(f"Email autenticado: {email}")
+
+        if not cognito_sub:
+            print("No se encontró el cognito_sub en claims")
+            return {
+                'statusCode': 401,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Credentials': True
+                },
+                'body': json.dumps({
+                    'error': 'No autorizado',
+                    'detalles': 'No se encontró el cognito_sub en el token'
+                })
+            }
         
         # Obtener el ID de la vianda de los parámetros de la URL
         vianda_id = event.get('pathParameters', {}).get('id')
@@ -49,8 +72,8 @@ def lambda_handler(event, context):
         cur = conn.cursor()
         
         # Buscar el ID de la persona por email
-        print(f"Buscando persona con email: {email}")
-        cur.execute("SELECT id FROM persona WHERE mail = %s", (email,))
+        print(f"Buscando persona con cognito_sub: {cognito_sub}")
+        cur.execute("SELECT id FROM persona WHERE cognito_sub = %s", (cognito_sub,))
         result = cur.fetchone()
         
         if not result:

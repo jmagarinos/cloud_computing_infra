@@ -12,12 +12,20 @@ def lambda_handler(event, context):
             password=os.environ['DB_PASSWORD'],
             port=5432
         )
+
+        cur = conn.cursor()
+
+        cur.execute("DROP TABLE IF EXISTS ventas CASCADE;")
+        cur.execute("DROP TABLE IF EXISTS vianda CASCADE;")
+        cur.execute("DROP TABLE IF EXISTS persona CASCADE;")
+        conn.commit()
+        cur.close()
+
         
         cur = conn.cursor()
 
 
         # Crear tabla persona
-        cur.execute("DROP TABLE IF EXISTS persona;")
         cur.execute("""
             CREATE TABLE IF NOT EXISTS persona (
                 id SERIAL PRIMARY KEY,
@@ -31,7 +39,6 @@ def lambda_handler(event, context):
         """)
 
         # Crear tabla vianda
-        cur.execute("DROP TABLE IF EXISTS vianda;")
         cur.execute("""
             CREATE TABLE IF NOT EXISTS vianda (
                 id SERIAL PRIMARY KEY,
@@ -47,7 +54,6 @@ def lambda_handler(event, context):
 
 
         # Crear tabla ventas
-        cur.execute("DROP TABLE IF EXISTS ventas;")
         cur.execute("""
             CREATE TABLE IF NOT EXISTS ventas (
                 id SERIAL PRIMARY KEY,

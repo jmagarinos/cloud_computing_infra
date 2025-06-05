@@ -33,10 +33,6 @@ def lambda_handler(event, context):
             print("No se encontró el cognito_sub en claims")
             return {
                 'statusCode': 401,
-                'headers': {
-                    'Access-Control-Allow-Origin': '*',
-                    'Access-Control-Allow-Credentials': True
-                },
                 'body': json.dumps({
                     'error': 'No autorizado',
                     'detalles': 'No se encontró el cognito_sub en el token'
