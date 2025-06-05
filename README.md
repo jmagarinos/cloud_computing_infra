@@ -29,7 +29,7 @@ La infraestructura se define completamente en **Terraform**.
 
 ## Estructura del proyecto
 
-code/
+```code/
 ├── api_gateway.tf            # Configuración de API Gateway
 ├── cognito.tf                # Configuración de Amazon Cognito
 ├── ec2.tf                    # Configuración de instancias EC2
@@ -67,7 +67,7 @@ code/
 ├── terraform.tfvars          # Variables de Terraform
 ├── variables.tf              # Definición de variables
 ├── versions.tf               # Versiones de providers
-└── Diagrama.jpeg             # Diagrama de arquitectura
+└── Diagrama.jpeg             # Diagrama de arquitectura```
 
 ---
 
