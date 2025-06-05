@@ -148,7 +148,7 @@ class LunchBoxAPI {
     // ENDPOINTS DE PERFIL
 
     // Obtener perfil del usuario
-    async getPerfilUsuario() {
+    async getUserProfile() {
         try {
             const response = await fetch(`${this.baseUrl}/perfil`, {
                 method: 'GET',
@@ -156,9 +156,37 @@ class LunchBoxAPI {
             });
             
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            return await response.json();
+            const data = await response.json();
+            return {
+                email: data.mail,
+                createdAt: new Date().toISOString() // Por ahora hardcodeamos la fecha
+            };
         } catch (error) {
             this.handleError(error);
+        }
+    }
+
+    // Obtener estadísticas del usuario
+    async getUserStats() {
+        try {
+            const response = await fetch(`${this.baseUrl}/perfil/stats`, {
+                method: 'GET',
+                headers: this.getAuthHeaders()
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            return {
+                totalCompras: data.totalCompras || 0,
+                totalGastado: data.totalGastado || 0
+            };
+        } catch (error) {
+            this.handleError(error);
+            // Si hay error, devolvemos valores por defecto
+            return {
+                totalCompras: 0,
+                totalGastado: 0
+            };
         }
     }
 
@@ -197,5 +225,8 @@ class LunchBoxAPI {
     }
 }
 
-// Exportar la clase para su uso
-export const api = new LunchBoxAPI(apiConfig.apiUrl);
+// Crear una instancia de la API con la URL base de la configuración
+const api = new LunchBoxAPI(apiConfig.apiUrl);
+
+// Exportar la instancia
+export { api };
