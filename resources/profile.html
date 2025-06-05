@@ -160,8 +160,8 @@
                         </form>
                     </div>
                 </div>
-
-                <!-- Statistics Cards -->
+                
+                <!-- Statistics Cards 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                     <div class="bg-white rounded-lg shadow-md p-6">
                         <div class="flex items-center">
@@ -211,11 +211,11 @@
                         </div>
                     </div>
                 </div>
-
+-->
                 <!-- Quick Actions -->
                 <div class="bg-white rounded-lg shadow-md p-6">
                     <h3 class="text-xl font-semibold text-gray-800 mb-4">Acciones Rápidas</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <a href="write_vianda.html" 
                             class="flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -223,13 +223,14 @@
                             </svg>
                             Crear Nueva Vianda
                         </a>
+                        <!--
                         <a href="mis-compras.html" 
                             class="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                             </svg>
                             Ver Mis Compras
-                        </a>
+                        </a>-->
                         <a href="index.html" 
                             class="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -237,6 +238,13 @@
                             </svg>
                             Explorar Viandas
                         </a>
+                        <button onclick="logout()" 
+                            class="flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                            </svg>
+                            Cerrar Sesión
+                        </button>
                     </div>
                 </div>
             </div>
@@ -290,7 +298,7 @@
                 
                 // Actualizar la interfaz
                 updateProfileDisplay();
-                updateStatsDisplay(profileData.estadisticas);
+                //updateStatsDisplay(profileData.estadisticas);
 
             } catch (error) {
                 console.error("Error cargando perfil:", error);
@@ -401,8 +409,11 @@
             if (isAuthenticated()) {
                 authButtons.innerHTML = `
                     <a href="write_vianda.html" class="text-gray-600 hover:text-gray-800 mr-4">Crear Vianda</a>
-                    <span class="text-gray-600 mr-4">Mi Perfil</span>
-                    <button onclick="logout()" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-200">
+                    <span class="text-gray-600 mr-4 font-medium">Mi Perfil</span>
+                    <button onclick="logout()" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                        </svg>
                         Cerrar Sesión
                     </button>
                 `;

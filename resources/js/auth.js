@@ -26,6 +26,30 @@ function isAuthenticated() {
     return token !== null;
 }
 
+// Función para cerrar sesión
+function logout() {
+    console.log('Cerrando sesión...');
+    
+    // Limpiar tokens del localStorage
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('id_token');
+    localStorage.removeItem('refresh_token');
+    
+    // Si hay un usuario actual en Cognito, cerrar su sesión
+    if (userPool) {
+        const cognitoUser = userPool.getCurrentUser();
+        if (cognitoUser) {
+            console.log('Cerrando sesión de Cognito...');
+            cognitoUser.signOut();
+        }
+    }
+    
+    console.log('Sesión cerrada exitosamente');
+    
+    // Redirigir a la página de login
+    window.location.href = 'login.html';
+}
+
 // Función para actualizar el header según el estado de autenticación
 function updateHeader() {
     console.log('Actualizando header...');
@@ -82,4 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('cognitoConfig no está definido');
     }
     updateHeader();
-}); 
+});
+
+// Hacer la función logout accesible globalmente
+window.logout = logout; 
