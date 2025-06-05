@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LunchBox - Mi Perfil</title>
+    <title>Mi Perfil - LunchBox</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
     <script src="js/config.js"></script>
@@ -20,102 +20,223 @@
     </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gray-100">
     <!-- Header -->
     <header class="bg-white shadow-md">
         <div class="container mx-auto px-4 py-6">
-            <nav class="flex items-center justify-between">
-                <a href="index.html" class="text-blue-600 hover:text-blue-800">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                </a>
-                <h1 class="text-3xl font-bold text-blue-600">LunchBox</h1>
-                <div class="w-6"></div>
-            </nav>
+            <div class="flex items-center justify-between">
+                <h1 class="text-3xl font-bold text-blue-600">
+                    <a href="index.html">LunchBox</a>
+                </h1>
+                <div class="header-right flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-600 hover:text-gray-800">Inicio</a>
+                    <a href="mis-compras.html" class="text-gray-600 hover:text-gray-800">Mis Compras</a>
+                    <div id="authButtons">
+                        <!-- El contenido se actualizará dinámicamente con auth.js -->
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <div class="container mx-auto px-4 py-16">
-        <!-- Loading State -->
-        <div id="loadingState" class="text-center py-8">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p class="mt-4 text-gray-600">Cargando perfil...</p>
-        </div>
-
-        <!-- Error State -->
-        <div id="errorState" class="hidden max-w-2xl mx-auto bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg" role="alert">
-            <div class="flex items-center mb-2">
-                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                </svg>
-                <strong class="font-bold">¡Error!</strong>
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Page Title -->
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-800">Mi Perfil</h2>
+                <p class="text-gray-600 mt-2">Gestiona tu información personal y revisa tu actividad</p>
             </div>
-            <p id="errorMessage" class="text-sm"></p>
-            <div class="mt-4 text-center">
-                <button onclick="retryLoad()" class="text-red-700 hover:text-red-800 underline">
-                    Intentar de nuevo
-                </button>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <p class="mt-4 text-gray-600">Cargando información del perfil...</p>
             </div>
-        </div>
 
-        <!-- Profile Content -->
-        <div id="profileContent" class="hidden max-w-2xl mx-auto">
-            <!-- Profile Card -->
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div class="p-8">
-                    <h2 class="text-2xl font-bold text-gray-800 text-center mb-8">Mi Perfil</h2>
-                    
-                    <div class="space-y-6">
-                        <div class="flex items-center justify-center mb-8">
-                            <div class="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center">
-                                <span class="text-3xl text-blue-600" id="userInitials"></span>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Correo Electrónico
-                            </label>
-                            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" id="userEmail">
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">
-                                Fecha de registro
-                            </label>
-                            <div class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg" id="userCreatedAt">
-                            </div>
-                        </div>
-
-                        <div class="pt-6">
-                            <button id="logoutButton"
-                                class="w-full bg-red-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-700 transition duration-200 flex items-center justify-center">
-                                <span>Cerrar Sesión</span>
-                            </button>
-                        </div>
+            <!-- Error State -->
+            <div id="errorState" class="hidden text-center py-8 text-red-600">
+                <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+                    <svg class="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-lg font-medium text-red-900">Error al cargar el perfil</h3>
+                    <p id="errorMessage" class="mt-1 text-sm text-red-700"></p>
+                    <div class="mt-4">
+                        <button onclick="loadUserProfile()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                            Reintentar
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Statistics Card -->
-            <div class="mt-8 bg-white rounded-lg shadow-lg overflow-hidden">
-                <div class="p-8">
-                    <h3 class="text-xl font-bold text-gray-800 mb-6">Estadísticas</h3>
-                    
-                    <div class="grid grid-cols-2 gap-6">
-                        <div class="text-center">
-                            <p class="text-sm text-gray-500 mb-1">Compras realizadas</p>
-                            <p class="text-2xl font-bold text-blue-600" id="totalCompras">0</p>
+            <!-- Profile Content -->
+            <div id="profileContent" class="hidden">
+                <!-- Profile Info Card -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-xl font-semibold text-gray-800">Información Personal</h3>
+                        <button id="editButton" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                            </svg>
+                            Editar
+                        </button>
+                    </div>
+
+                    <!-- Display Mode -->
+                    <div id="displayMode">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                                <p id="displayNombre" class="text-gray-900"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+                                <p id="displayApellido" class="text-gray-900"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <p id="displayEmail" class="text-gray-900"></p>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                                <p id="displayTelefono" class="text-gray-900"></p>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                                <p id="displayDireccion" class="text-gray-900"></p>
+                            </div>
                         </div>
-                        <div class="text-center">
-                            <p class="text-sm text-gray-500 mb-1">Total gastado</p>
-                            <p class="text-2xl font-bold text-blue-600">$<span id="totalGastado">0.00</span></p>
+                    </div>
+
+                    <!-- Edit Mode -->
+                    <div id="editMode" class="hidden">
+                        <form id="profileForm">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                                    <input type="text" id="nombre" name="nombre" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        required>
+                                </div>
+                                <div>
+                                    <label for="apellido" class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+                                    <input type="text" id="apellido" name="apellido" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        required>
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                    <input type="email" id="email" name="email" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed"
+                                        readonly>
+                                    <p class="text-xs text-gray-500 mt-1">El email no se puede modificar</p>
+                                </div>
+                                <div>
+                                    <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                                    <input type="tel" id="telefono" name="telefono" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        required>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label for="direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                                    <input type="text" id="direccion" name="direccion" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        required>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end space-x-3 mt-6">
+                                <button type="button" id="cancelButton" 
+                                    class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                                    Cancelar
+                                </button>
+                                <button type="submit" id="saveButton" 
+                                    class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    Guardar Cambios
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="h-8 w-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Total de Compras</dt>
+                                    <dd id="totalCompras" class="text-lg font-medium text-gray-900">0</dd>
+                                </dl>
+                            </div>
                         </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Total Gastado</dt>
+                                    <dd id="totalGastado" class="text-lg font-medium text-gray-900">$0.00</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="h-8 w-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-5 w-0 flex-1">
+                                <dl>
+                                    <dt class="text-sm font-medium text-gray-500 truncate">Miembro desde</dt>
+                                    <dd id="fechaRegistro" class="text-lg font-medium text-gray-900">-</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Acciones Rápidas</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <a href="write_vianda.html" 
+                            class="flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                            Crear Nueva Vianda
+                        </a>
+                        <a href="mis-compras.html" 
+                            class="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                            </svg>
+                            Ver Mis Compras
+                        </a>
+                        <a href="index.html" 
+                            class="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            Explorar Viandas
+                        </a>
                     </div>
                 </div>
             </div>
@@ -125,87 +246,179 @@
     <script type="module">
         import { api } from './js/api.js';
 
-        // UI Elements
+        let userProfile = {};
+        let isEditing = false;
+
+        // Referencias a elementos del DOM
         const loadingState = document.getElementById('loadingState');
         const errorState = document.getElementById('errorState');
+        const errorMessage = document.getElementById('errorMessage');
         const profileContent = document.getElementById('profileContent');
-        const logoutButton = document.getElementById('logoutButton');
+        const displayMode = document.getElementById('displayMode');
+        const editMode = document.getElementById('editMode');
+        const editButton = document.getElementById('editButton');
+        const cancelButton = document.getElementById('cancelButton');
+        const profileForm = document.getElementById('profileForm');
 
-        function showError(message) {
-            loadingState.classList.add('hidden');
-            profileContent.classList.add('hidden');
-            errorState.classList.remove('hidden');
-            document.getElementById('errorMessage').textContent = message;
-        }
-
-        function showLoading() {
-            loadingState.classList.remove('hidden');
-            errorState.classList.add('hidden');
-            profileContent.classList.add('hidden');
-        }
-
-        function showContent() {
-            loadingState.classList.add('hidden');
-            errorState.classList.add('hidden');
-            profileContent.classList.remove('hidden');
-        }
-
+        // Función para cargar el perfil del usuario
         async function loadUserProfile() {
-            if (!isAuthenticated()) {
-                window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
-                return;
-            }
-
-            showLoading();
-
             try {
-                // Obtener datos del perfil
-                const userProfile = await api.getUserProfile();
+                // Mostrar estado de carga
+                loadingState.classList.remove('hidden');
+                errorState.classList.add('hidden');
+                profileContent.classList.add('hidden');
+
+                // Cargar datos del perfil desde la nueva API de perfil
+                const profileData = await api.getUserProfile();
+                console.log('Datos del perfil:', profileData);
+
+                userProfile = {
+                    id: profileData.id,
+                    nombre: profileData.nombre,
+                    apellido: profileData.apellido,
+                    email: profileData.email,
+                    telefono: profileData.telefono,
+                    direccion: profileData.direccion,
+                    fechaRegistro: new Date() // Por ahora usamos fecha actual
+                };
+
+                // Ocultar estado de carga
+                loadingState.classList.add('hidden');
                 
-                // Actualizar UI con datos del perfil
-                document.getElementById('userEmail').textContent = userProfile.email;
-                document.getElementById('userInitials').textContent = userProfile.email.charAt(0).toUpperCase();
-                document.getElementById('userCreatedAt').textContent = new Date(userProfile.createdAt).toLocaleDateString();
+                // Mostrar contenido del perfil
+                profileContent.classList.remove('hidden');
+                
+                // Actualizar la interfaz
+                updateProfileDisplay();
+                updateStatsDisplay(profileData.estadisticas);
 
-                // Obtener estadísticas
-                const stats = await api.getUserStats();
-                document.getElementById('totalCompras').textContent = stats.totalCompras;
-                document.getElementById('totalGastado').textContent = stats.totalGastado.toFixed(2);
-
-                showContent();
             } catch (error) {
-                console.error('Error al cargar el perfil:', error);
-                showError(error.message || 'Error al cargar el perfil del usuario');
+                console.error("Error cargando perfil:", error);
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                
+                if (error.message.includes('401')) {
+                    errorMessage.textContent = 'Sesión expirada. Por favor, inicia sesión nuevamente.';
+                } else {
+                    errorMessage.textContent = `Error al cargar el perfil: ${error.message}`;
+                }
             }
         }
 
-        // Función para reintentar la carga
-        window.retryLoad = loadUserProfile;
+        // Función para actualizar la visualización del perfil
+        function updateProfileDisplay() {
+            document.getElementById('displayNombre').textContent = userProfile.nombre;
+            document.getElementById('displayApellido').textContent = userProfile.apellido;
+            document.getElementById('displayEmail').textContent = userProfile.email;
+            document.getElementById('displayTelefono').textContent = userProfile.telefono;
+            document.getElementById('displayDireccion').textContent = userProfile.direccion;
+        }
 
-        // Manejar cierre de sesión
-        logoutButton.addEventListener('click', async () => {
+        // Función para actualizar las estadísticas
+        function updateStatsDisplay(stats) {
+            document.getElementById('totalCompras').textContent = stats.totalCompras;
+            document.getElementById('totalGastado').textContent = `$${stats.totalGastado.toFixed(2)}`;
+            document.getElementById('fechaRegistro').textContent = userProfile.fechaRegistro.toLocaleDateString('es-AR');
+        }
+
+        // Función para activar el modo de edición
+        function enterEditMode() {
+            isEditing = true;
+            displayMode.classList.add('hidden');
+            editMode.classList.remove('hidden');
+            editButton.style.display = 'none';
+
+            // Llenar el formulario con los datos actuales
+            document.getElementById('nombre').value = userProfile.nombre;
+            document.getElementById('apellido').value = userProfile.apellido;
+            document.getElementById('email').value = userProfile.email;
+            document.getElementById('telefono').value = userProfile.telefono;
+            document.getElementById('direccion').value = userProfile.direccion;
+        }
+
+        // Función para salir del modo de edición
+        function exitEditMode() {
+            isEditing = false;
+            displayMode.classList.remove('hidden');
+            editMode.classList.add('hidden');
+            editButton.style.display = 'inline-flex';
+        }
+
+        // Event listeners
+        editButton.addEventListener('click', enterEditMode);
+        cancelButton.addEventListener('click', exitEditMode);
+
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const updatedProfile = {
+                nombre: formData.get('nombre'),
+                apellido: formData.get('apellido'),
+                telefono: formData.get('telefono'),
+                direccion: formData.get('direccion')
+            };
+
             try {
-                logoutButton.disabled = true;
-                logoutButton.innerHTML = `
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Cerrando sesión...
-                `;
+                // Deshabilitar el botón de guardar
+                const saveButton = document.getElementById('saveButton');
+                saveButton.disabled = true;
+                saveButton.textContent = 'Guardando...';
 
-                await logout();
-                window.location.href = 'index.html';
+                // Llamar a la API para actualizar el perfil
+                const updatedProfileData = await api.updateUserProfile(updatedProfile);
+                
+                // Actualizar los datos localmente con la respuesta del servidor
+                userProfile = {
+                    ...userProfile,
+                    ...updatedProfileData
+                };
+                updateProfileDisplay();
+                exitEditMode();
+
+                // Mostrar mensaje de éxito
+                alert('Perfil actualizado correctamente');
+
             } catch (error) {
-                console.error('Error al cerrar sesión:', error);
-                logoutButton.disabled = false;
-                logoutButton.innerHTML = '<span>Cerrar Sesión</span>';
-                alert('Error al cerrar sesión: ' + error.message);
+                console.error('Error actualizando perfil:', error);
+                alert('Error al actualizar el perfil. Por favor, intenta nuevamente.');
+            } finally {
+                const saveButton = document.getElementById('saveButton');
+                saveButton.disabled = false;
+                saveButton.textContent = 'Guardar Cambios';
             }
         });
 
+        // Función global para recargar el perfil
+        window.loadUserProfile = loadUserProfile;
+
         // Cargar perfil al iniciar
         loadUserProfile();
+
+        // Actualizar botones de autenticación
+        function updateAuthButtons() {
+            const authButtons = document.getElementById('authButtons');
+            if (isAuthenticated()) {
+                authButtons.innerHTML = `
+                    <a href="write_vianda.html" class="text-gray-600 hover:text-gray-800 mr-4">Crear Vianda</a>
+                    <span class="text-gray-600 mr-4">Mi Perfil</span>
+                    <button onclick="logout()" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-200">
+                        Cerrar Sesión
+                    </button>
+                `;
+            } else {
+                window.location.href = 'login.html';
+            }
+        }
+
+        // Verificar autenticación al cargar la página
+        if (typeof isAuthenticated === 'function') {
+            if (!isAuthenticated()) {
+                window.location.href = 'login.html';
+            } else {
+                updateAuthButtons();
+            }
+        }
     </script>
 </body>
 

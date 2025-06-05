@@ -21,6 +21,14 @@ locals {
       base_name = "lambda_vianda_get"
       timeout   = 60
     }
+    vianda_profile = {
+      base_name = "lambda_vianda_profile"
+      timeout   = 60
+    }
+    vianda_profile_update = {
+      base_name = "lambda_vianda_profile_update"
+      timeout   = 60
+    }
   }
 }
 

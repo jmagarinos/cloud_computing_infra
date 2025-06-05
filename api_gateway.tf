@@ -144,6 +144,58 @@ resource "aws_lambda_permission" "allow_api_gateway_get" {
   source_arn    = "${aws_apigatewayv2_api.vianda_api.execution_arn}/*/*"
 }
 
+# GET /perfil
+resource "aws_apigatewayv2_route" "get_perfil" {
+  api_id    = aws_apigatewayv2_api.vianda_api.id
+  route_key = "GET /perfil"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_profile_integration.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+}
+
+resource "aws_apigatewayv2_integration" "lambda_profile_integration" {
+  api_id                 = aws_apigatewayv2_api.vianda_api.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.vianda["vianda_profile"].invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_profile" {
+  statement_id  = "AllowAPIGatewayInvokeProfile"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.vianda["vianda_profile"].function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.vianda_api.execution_arn}/*/*"
+}
+
+# PUT /perfil
+resource "aws_apigatewayv2_route" "put_perfil" {
+  api_id    = aws_apigatewayv2_api.vianda_api.id
+  route_key = "PUT /perfil"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_profile_update_integration.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+}
+
+resource "aws_apigatewayv2_integration" "lambda_profile_update_integration" {
+  api_id                 = aws_apigatewayv2_api.vianda_api.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.vianda["vianda_profile_update"].invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_profile_update" {
+  statement_id  = "AllowAPIGatewayInvokeProfileUpdate"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.vianda["vianda_profile_update"].function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.vianda_api.execution_arn}/*/*"
+}
+
 # Stage de la API
 resource "aws_apigatewayv2_stage" "vianda_api_stage" {
   api_id      = aws_apigatewayv2_api.vianda_api.id

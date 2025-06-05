@@ -157,29 +157,17 @@ class LunchBoxAPI {
             
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
-            return {
-                email: data.mail,
-                createdAt: new Date().toISOString() // Por ahora hardcodeamos la fecha
-            };
+            return data.perfil; // Devolver directamente el objeto perfil
         } catch (error) {
             this.handleError(error);
         }
     }
 
-    // Obtener estadísticas del usuario
+    // Obtener estadísticas del usuario (ahora incluidas en getUserProfile)
     async getUserStats() {
         try {
-            const response = await fetch(`${this.baseUrl}/perfil/stats`, {
-                method: 'GET',
-                headers: this.getAuthHeaders()
-            });
-            
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            const data = await response.json();
-            return {
-                totalCompras: data.totalCompras || 0,
-                totalGastado: data.totalGastado || 0
-            };
+            const profile = await this.getUserProfile();
+            return profile.estadisticas;
         } catch (error) {
             this.handleError(error);
             // Si hay error, devolvemos valores por defecto
@@ -191,7 +179,7 @@ class LunchBoxAPI {
     }
 
     // Actualizar perfil del usuario
-    async updatePerfilUsuario(perfilData) {
+    async updateUserProfile(perfilData) {
         try {
             const response = await fetch(`${this.baseUrl}/perfil`, {
                 method: 'PUT',
@@ -200,7 +188,8 @@ class LunchBoxAPI {
             });
             
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            return await response.json();
+            const data = await response.json();
+            return data.perfil; // Devolver el perfil actualizado
         } catch (error) {
             this.handleError(error);
         }

@@ -34,6 +34,16 @@ cd temp_lambda
 zip ../lambda_vianda_get.zip lambda_vianda_get.py
 cd ..
 
+cp lambda_vianda_profile.py temp_lambda/lambda_vianda_profile.py
+cd temp_lambda
+zip ../lambda_vianda_profile.zip lambda_vianda_profile.py
+cd ..
+
+cp lambda_vianda_profile_update.py temp_lambda/lambda_vianda_profile_update.py
+cd temp_lambda
+zip ../lambda_vianda_profile_update.zip lambda_vianda_profile_update.py
+cd ..
+
 cp lambda_cognito_post_confirmation.py temp_lambda/lambda_cognito_post_confirmation.py
 cd temp_lambda
 zip ../lambda_cognito_post_confirmation.zip lambda_cognito_post_confirmation.py
