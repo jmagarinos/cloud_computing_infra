@@ -73,3 +73,9 @@ variable "public_subnet_cidr" {
   description = "CIDR block for public subnet"
   type        = string
 }
+
+variable "bastion_admin_ip" {
+  description = "Dirección IP pública del administrador para acceso SSH"
+  type        = string
+  default     = "190.16.197.33/32" # podés cambiar el default si querés
+}

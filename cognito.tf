@@ -1,3 +1,7 @@
+# -----------------------------
+# Cognito User Pool
+# -----------------------------
+
 resource "aws_cognito_user_pool" "main" {
   name                = format("user-pool-%s", var.environment)
   username_attributes = ["email"]

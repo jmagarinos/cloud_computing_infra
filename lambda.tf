@@ -1,4 +1,6 @@
-# Local with Lambda definitions
+# -----------------------------
+# Lambda locals
+# -----------------------------
 locals {
   vianda_lambdas = {
     vianda_writer = {
@@ -32,8 +34,9 @@ locals {
   }
 }
 
-
-# Single aws_lambda_function with for_each
+# -----------------------------
+# Lambda Vianda Actions Creation
+# -----------------------------
 resource "aws_lambda_function" "vianda" {
   for_each = local.vianda_lambdas
 
@@ -43,7 +46,6 @@ resource "aws_lambda_function" "vianda" {
 
   runtime = "python3.12"
 
-  # 🔥 Aquí está la magia:
   handler  = "${each.value.base_name}.lambda_handler"
   filename = "${path.module}/scripts/${each.value.base_name}.zip"
 
@@ -65,6 +67,10 @@ resource "aws_lambda_function" "vianda" {
   depends_on = [aws_cognito_user_pool.main]
   layers     = [aws_lambda_layer_version.psycopg2_layer.arn]
 }
+
+# -----------------------------
+# Lambda DB Init 
+# -----------------------------
 
 resource "aws_lambda_function" "rds_init" {
   function_name = "rds-init"
@@ -108,6 +114,9 @@ resource "aws_lambda_function" "rds_init" {
   ]
 }
 
+# -----------------------------
+# Lambda cognito DB writer
+# -----------------------------
 
 resource "aws_lambda_function" "cognito_post_confirmation_trigger" {
   function_name = "cognito-post-confirmation-trigger"
@@ -125,14 +134,14 @@ resource "aws_lambda_function" "cognito_post_confirmation_trigger" {
     }
   }
 
-  timeout = 30 # seconds
+  timeout = 30
 
   vpc_config {
     subnet_ids         = [for subnet in aws_subnet.private : subnet.id]
     security_group_ids = [module.sg.security_group_id]
   }
 
-  layers     = [aws_lambda_layer_version.psycopg2_layer.arn] # Needs psycopg2 to connect to RDS
+  layers     = [aws_lambda_layer_version.psycopg2_layer.arn]
   depends_on = [aws_db_instance.postgres]
 }
 
@@ -143,6 +152,10 @@ resource "aws_lambda_permission" "allow_cognito_to_invoke_post_confirmation" {
   principal     = "cognito-idp.amazonaws.com"
   source_arn    = aws_cognito_user_pool.main.arn
 }
+
+# -----------------------------
+# Lambda Layers
+# -----------------------------
 
 resource "aws_lambda_layer_version" "psycopg2_layer" {
   layer_name          = "psycopg2-lunchbox"

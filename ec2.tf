@@ -1,3 +1,6 @@
+# -----------------------------
+# DB Admin Bastion
+# -----------------------------
 resource "aws_key_pair" "bastion_key" {
   key_name   = "bastion-key-${var.environment}"
   public_key = file("${path.module}/keys/bastion_key.pub")
@@ -12,7 +15,7 @@ resource "aws_security_group" "bastion_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["190.16.197.33/32"]
+    cidr_blocks = [var.bastion_admin_ip]
   }
 
   egress {
@@ -39,3 +42,27 @@ resource "aws_instance" "bastion" {
     Name = "bastion-${var.environment}"
   }
 }
+
+# resource "aws_security_group" "rds_sg" {
+#   name        = "rds-security-group"
+#   description = "Allow access to RDS"
+#   vpc_id      = module.vpc.vpc_id
+
+#   ingress {
+#     from_port   = 5432
+#     to_port     = 5432
+#     protocol    = "tcp"
+#     cidr_blocks = [var.allowed_ingress_cidr]
+#   }
+
+#   egress {
+#     from_port   = 0
+#     to_port     = 0
+#     protocol    = "-1"
+#     cidr_blocks = ["0.0.0.0/0"]
+#   }
+
+#   tags = {
+#     Name = "rds-sg"
+#   }
+# }

@@ -146,8 +146,8 @@ resource "aws_s3_object" "auth_js" {
 resource "aws_s3_object" "api_js" {
   bucket       = aws_s3_bucket.website.id
   key          = "js/api.js"
-  source       = "${path.module}/resources/js/api.js" // Ensure this path is correct
-  etag         = filemd5("${path.module}/resources/js/api.js") // Ensure this path is correct
+  source       = "${path.module}/resources/js/api.js"
+  etag         = filemd5("${path.module}/resources/js/api.js")
   content_type = "application/javascript"
 }
 

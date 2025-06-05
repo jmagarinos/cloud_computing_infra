@@ -21,7 +21,7 @@ La infraestructura se define completamente en **Terraform**.
 ### Componentes
 
 - **VPC**, subredes, security groups
-- **EC2** (opcional para tareas administrativas)
+- **EC2** (opcional para tareas exclusivamente administrativas)
 - **RDS (PostgreSQL)** para almacenar datos de usuarios y viandas
 - **S3** para imágenes de viandas (originales + thumbnails)
 - **Cognito** para autenticación y gestión de usuarios
