@@ -6,9 +6,8 @@ const cognitoConfig = {
 
 
 // Configuración de la API
-
 const apiConfig = {
-    apiUrl: 'https://95iocvra45.execute-api.us-east-1.amazonaws.com/dev'
+    apiUrl: 'https://o91hot3cr7.execute-api.us-east-1.amazonaws.com/dev'
 };
 
 

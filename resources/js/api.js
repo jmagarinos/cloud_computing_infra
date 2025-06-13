@@ -50,14 +50,26 @@ class LunchBoxAPI {
     // Obtener una vianda específica
     async getVianda(id) {
         try {
+            console.log('Llamando a getVianda con ID:', id);
+            console.log('URL:', `${this.baseUrl}/viandas/${id}`);
+            console.log('Headers:', this.getAuthHeaders());
+            
             const response = await fetch(`${this.baseUrl}/viandas/${id}`, {
                 method: 'GET',
                 headers: this.getAuthHeaders()
             });
             
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            return await response.json();
+            console.log('Respuesta recibida:', response);
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Error response:', errorText);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            console.log('Datos recibidos:', data);
+            return data;
         } catch (error) {
+            console.error('Error en getVianda:', error);
             this.handleError(error);
         }
     }

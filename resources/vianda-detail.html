@@ -98,118 +98,125 @@
     <script type="module">
         import { api } from './js/api.js';
 
-        // Get the vianda ID from the URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const viandaId = urlParams.get('id');
+        async function init() {
+            // Get the vianda ID from the URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const viandaId = urlParams.get('id');
 
-        if (!viandaId) {
-            showError('No se especificó el ID de la vianda');
-            return;
-        }
-
-        // UI Elements
-        const loadingState = document.getElementById('loadingState');
-        const errorState = document.getElementById('errorState');
-        const viandaContent = document.getElementById('viandaContent');
-        const comprarButton = document.getElementById('comprarButton');
-        const cantidadInput = document.getElementById('cantidad');
-
-        function showError(message) {
-            loadingState.classList.add('hidden');
-            viandaContent.classList.add('hidden');
-            errorState.classList.remove('hidden');
-            document.getElementById('errorMessage').textContent = message;
-        }
-
-        function showLoading() {
-            loadingState.classList.remove('hidden');
-            errorState.classList.add('hidden');
-            viandaContent.classList.add('hidden');
-        }
-
-        function showContent() {
-            loadingState.classList.add('hidden');
-            errorState.classList.add('hidden');
-            viandaContent.classList.remove('hidden');
-        }
-
-        async function loadViandaDetail() {
-            showLoading();
-
-            try {
-                const vianda = await api.getVianda(viandaId);
-
-                // Update the UI with vianda details
-                document.getElementById('viandaImage').src = vianda.imagen || `https://placehold.co/800x600?text=${encodeURIComponent(vianda.titulo)}`;
-                document.getElementById('viandaImage').alt = vianda.titulo;
-                document.getElementById('viandaTitle').textContent = vianda.titulo;
-                document.getElementById('viandaPrecio').textContent = vianda.precio.toFixed(2);
-                document.getElementById('viandaDescripcion').textContent = vianda.descripcion;
-
-                showContent();
-            } catch (error) {
-                console.error("Error loading vianda details:", error);
-                showError(error.message || 'Error al cargar los detalles de la vianda');
-            }
-        }
-
-        // Handle purchase button click
-        window.comprarVianda = async function() {
-            if (!isAuthenticated()) {
-                alert('Debes iniciar sesión para realizar una compra');
-                window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+            if (!viandaId) {
+                showError('No se especificó el ID de la vianda');
                 return;
             }
 
-            const cantidad = parseInt(cantidadInput.value);
-            if (cantidad < 1) {
-                alert('La cantidad debe ser mayor a 0');
-                return;
+            // UI Elements
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const viandaContent = document.getElementById('viandaContent');
+            const comprarButton = document.getElementById('comprarButton');
+            const cantidadInput = document.getElementById('cantidad');
+
+            function showError(message) {
+                loadingState.classList.add('hidden');
+                viandaContent.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                document.getElementById('errorMessage').textContent = message;
             }
 
-            try {
-                comprarButton.disabled = true;
-                comprarButton.innerHTML = `
-                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Procesando...
-                `;
-
-                const compraData = {
-                    viandaId: viandaId,
-                    cantidad: cantidad
-                };
-
-                const resultado = await api.comprarVianda(compraData);
-                alert('¡Compra realizada con éxito!');
-                window.location.href = 'mis-compras.html';
-            } catch (error) {
-                console.error('Error al realizar la compra:', error);
-                alert('Error al realizar la compra: ' + error.message);
-            } finally {
-                comprarButton.disabled = false;
-                comprarButton.innerHTML = '<span>Comprar Ahora</span>';
+            function showLoading() {
+                loadingState.classList.remove('hidden');
+                errorState.classList.add('hidden');
+                viandaContent.classList.add('hidden');
             }
-        }
 
-        // Cantidad controls
-        window.incrementarCantidad = function() {
-            cantidadInput.value = parseInt(cantidadInput.value) + 1;
-        }
-
-        window.decrementarCantidad = function() {
-            const newValue = parseInt(cantidadInput.value) - 1;
-            if (newValue >= 1) {
-                cantidadInput.value = newValue;
+            function showContent() {
+                loadingState.classList.add('hidden');
+                errorState.classList.add('hidden');
+                viandaContent.classList.remove('hidden');
             }
+
+            async function loadViandaDetail() {
+                showLoading();
+                console.log("Iniciando carga de vianda con ID:", viandaId);
+                try {
+                    console.log("Llamando a api.getVianda...");
+                    const vianda = await api.getVianda(viandaId);
+                    console.log("Respuesta recibida:", vianda);
+
+                    // Update the UI with vianda details
+                    document.getElementById('viandaImage').src = vianda.imagen || `https://placehold.co/800x600?text=${encodeURIComponent(vianda.titulo)}`;
+                    document.getElementById('viandaImage').alt = vianda.titulo;
+                    document.getElementById('viandaTitle').textContent = vianda.titulo;
+                    document.getElementById('viandaPrecio').textContent = vianda.precio.toFixed(2);
+                    document.getElementById('viandaDescripcion').textContent = vianda.descripcion;
+
+                    console.log("UI actualizada, mostrando contenido");
+                    showContent();
+                } catch (error) {
+                    console.error("Error detallado al cargar vianda:", error);
+                    showError(error.message || 'Error al cargar los detalles de la vianda');
+                }
+            }
+
+            // Handle purchase button click
+            window.comprarVianda = async function() {
+                if (!isAuthenticated()) {
+                    alert('Debes iniciar sesión para realizar una compra');
+                    window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                    return;
+                }
+
+                const cantidad = parseInt(cantidadInput.value);
+                if (cantidad < 1) {
+                    alert('La cantidad debe ser mayor a 0');
+                    return;
+                }
+
+                try {
+                    comprarButton.disabled = true;
+                    comprarButton.innerHTML = `
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Procesando...
+                    `;
+
+                    const compraData = {
+                        viandaId: viandaId,
+                        cantidad: cantidad
+                    };
+
+                    const resultado = await api.comprarVianda(compraData);
+                    alert('¡Compra realizada con éxito!');
+                    window.location.href = 'mis-compras.html';
+                } catch (error) {
+                    console.error('Error al realizar la compra:', error);
+                    alert('Error al realizar la compra: ' + error.message);
+                } finally {
+                    comprarButton.disabled = false;
+                    comprarButton.innerHTML = '<span>Comprar Ahora</span>';
+                }
+            }
+
+            // Cantidad controls
+            window.incrementarCantidad = function() {
+                cantidadInput.value = parseInt(cantidadInput.value) + 1;
+            }
+
+            window.decrementarCantidad = function() {
+                const newValue = parseInt(cantidadInput.value) - 1;
+                if (newValue >= 1) {
+                    cantidadInput.value = newValue;
+                }
+            }
+
+            // Load vianda details when the page loads
+            await loadViandaDetail();
         }
 
-        // Load vianda details when the page loads
-        loadViandaDetail();
+        // Initialize the page
+        init();
     </script>
 </body>
 
-</html> 
 </html> 
