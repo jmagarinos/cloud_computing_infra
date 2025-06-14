@@ -103,14 +103,15 @@ def lambda_handler(event, context):
         query = """
             SELECT v.id, v.titulo, v.descripcion, v.precio, v.imagen, v.disponible,
                    p.nombre as creador_nombre, p.apellido as creador_apellido,
-                   p.mail as creador_email
+                   p.mail as creador_email,
+                   CASE WHEN v.fk_dueno = %s THEN true ELSE false END as es_creador
             FROM vianda v
             JOIN persona p ON v.fk_dueno = p.id
             WHERE v.id = %s
         """
         
         print(f"Ejecutando query para vianda ID: {vianda_id}")
-        cur.execute(query, (vianda_id,))
+        cur.execute(query, (user_id, vianda_id))
         vianda = cur.fetchone()
         
         if not vianda:
@@ -140,7 +141,8 @@ def lambda_handler(event, context):
                 'nombre': vianda[6],
                 'apellido': vianda[7],
                 'email': vianda[8]
-            }
+            },
+            'es_creador': vianda[9]
         }
         
         cur.close()

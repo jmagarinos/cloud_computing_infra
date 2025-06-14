@@ -124,6 +124,21 @@ class LunchBoxAPI {
         }
     }
 
+    // Cambiar disponibilidad de una vianda
+    async toggleDisponibilidad(id) {
+        try {
+            const response = await fetch(`${this.baseUrl}/viandas/${id}/disponibilidad`, {
+                method: 'PUT',
+                headers: this.getAuthHeaders()
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            this.handleError(error);
+        }
+    }
+
     // ENDPOINTS DE COMPRAS
 
     // Realizar una compra

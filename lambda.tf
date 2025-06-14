@@ -31,6 +31,10 @@ locals {
       base_name = "lambda_vianda_profile_update"
       timeout   = 60
     }
+    vianda_toggle_disponibilidad = {
+      base_name = "lambda_vianda_toggle_disponibilidad"
+      timeout   = 60
+    }
   }
 }
 

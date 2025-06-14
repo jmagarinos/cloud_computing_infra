@@ -4,7 +4,7 @@ import psycopg2
 
 def lambda_handler(event, context):
     try:
-        print("Lambda LIST iniciada")
+        print("Lambda TOGGLE DISPONIBILIDAD iniciada")
         print(f"Evento recibido: {json.dumps(event, indent=2)}")
         
         # Verificar si tenemos el contexto de autorización
@@ -33,9 +33,31 @@ def lambda_handler(event, context):
             print("No se encontró el cognito_sub en claims")
             return {
                 'statusCode': 401,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Credentials': True
+                },
                 'body': json.dumps({
                     'error': 'No autorizado',
                     'detalles': 'No se encontró el cognito_sub en el token'
+                })
+            }
+        
+        # Obtener el ID de la vianda de los parámetros de la URL
+        vianda_id = event.get('pathParameters', {}).get('id')
+        print(f"ID de vianda solicitada: {vianda_id}")
+        
+        if not vianda_id:
+            print("Error: No se proporcionó ID de vianda")
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Credentials': True
+                },
+                'body': json.dumps({
+                    'error': 'Datos inválidos',
+                    'detalles': 'Se requiere el ID de la vianda'
                 })
             }
         
@@ -53,9 +75,7 @@ def lambda_handler(event, context):
         
         # Get user info from database
         user_query = """
-            SELECT id, nombre, apellido, mail, telefono, direccion 
-            FROM persona 
-            WHERE cognito_sub = %s
+            SELECT id FROM persona WHERE cognito_sub = %s
         """
         cur.execute(user_query, (cognito_sub,))
         user_info = cur.fetchone()
@@ -74,45 +94,37 @@ def lambda_handler(event, context):
                 })
             }
         
-        user_id, nombre, apellido, db_email, telefono, direccion = user_info
-        print(f"Usuario encontrado: {nombre} {apellido} ({db_email})")
+        user_id = user_info[0]
+        print(f"Usuario encontrado: id = {user_id}")
         
-        # Obtener todas las viandas
-        query = """
-            SELECT v.id, v.titulo, v.descripcion, v.precio, v.imagen, v.disponible,
-                   p.nombre as creador_nombre, p.apellido as creador_apellido,
-                   CASE WHEN v.fk_dueno = %s THEN true ELSE false END as es_creador
-            FROM vianda v
-            JOIN persona p ON v.fk_dueno = p.id
-            ORDER BY v.id DESC
-        """
+        # Verificar si la vianda existe y pertenece al usuario
+        print("Verificando propiedad de la vianda")
+        cur.execute("SELECT disponible FROM vianda WHERE id = %s AND fk_dueno = %s", (vianda_id, user_id))
+        result = cur.fetchone()
         
-        print("Ejecutando query de viandas")
-        cur.execute(query, (user_id,))
-        viandas = cur.fetchall()
-        
-        # Convertir los resultados a un formato JSON
-        viandas_list = []
-        for vianda in viandas:
-            viandas_list.append({
-                'id': vianda[0],
-                'titulo': vianda[1],
-                'descripcion': vianda[2],
-                'precio': float(vianda[3]),
-                'imagen': vianda[4],
-                'disponible': vianda[5],
-                'creador': {
-                    'nombre': vianda[6],
-                    'apellido': vianda[7]
+        if not result:
+            return {
+                'statusCode': 404,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Credentials': True
                 },
-                'es_creador': vianda[8]
-            })
+                'body': json.dumps({
+                    'error': 'Vianda no encontrada o no tienes permiso para modificarla'
+                })
+            }
+        
+        # Cambiar la disponibilidad
+        nueva_disponibilidad = not result[0]
+        print(f"Cambiando disponibilidad a: {nueva_disponibilidad}")
+        
+        cur.execute("UPDATE vianda SET disponible = %s WHERE id = %s", (nueva_disponibilidad, vianda_id))
+        conn.commit()
         
         cur.close()
         conn.close()
         
-        print(f"Se encontraron {len(viandas_list)} viandas disponibles")
-        
+        print("Disponibilidad actualizada correctamente")
         return {
             'statusCode': 200,
             'headers': {
@@ -120,7 +132,8 @@ def lambda_handler(event, context):
                 'Access-Control-Allow-Credentials': True
             },
             'body': json.dumps({
-                'viandas': viandas_list
+                'message': 'Disponibilidad actualizada correctamente',
+                'disponible': nueva_disponibilidad
             })
         }
         
@@ -135,7 +148,7 @@ def lambda_handler(event, context):
                 'Access-Control-Allow-Credentials': True
             },
             'body': json.dumps({
-                'error': 'Error al obtener las viandas',
+                'error': 'Error al cambiar la disponibilidad',
                 'detalles': str(e)
             })
-        }
+        } 

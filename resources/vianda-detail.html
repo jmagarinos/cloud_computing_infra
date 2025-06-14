@@ -68,6 +68,18 @@
                     </div>
                     <p id="viandaDescripcion" class="text-gray-600 mb-8 leading-relaxed"></p>
                     
+                    <!-- Botones de administración (solo para el creador) -->
+                    <div id="adminButtons" class="hidden mb-6 space-y-4">
+                        <button onclick="toggleDisponibilidad()" id="toggleDisponibilidadButton"
+                            class="w-full bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-yellow-700 transition duration-200 flex items-center justify-center">
+                            <span id="toggleDisponibilidadText">Cambiar Disponibilidad</span>
+                        </button>
+                        <button onclick="eliminarVianda()" id="eliminarButton"
+                            class="w-full bg-red-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-red-700 transition duration-200 flex items-center justify-center">
+                            <span>Eliminar Vianda</span>
+                        </button>
+                    </div>
+                    
                     <!-- Cantidad Selector -->
                     <div class="mb-6">
                         <label for="cantidad" class="block text-sm font-medium text-gray-700 mb-2">Cantidad</label>
@@ -149,6 +161,23 @@
                     document.getElementById('viandaPrecio').textContent = vianda.precio.toFixed(2);
                     document.getElementById('viandaDescripcion').textContent = vianda.descripcion;
 
+                    // Mostrar/ocultar botones de administración
+                    const adminButtons = document.getElementById('adminButtons');
+                    if (vianda.es_creador) {
+                        adminButtons.classList.remove('hidden');
+                        comprarButton.classList.add('hidden');
+                        // Actualizar el texto del botón según la disponibilidad
+                        const toggleButton = document.getElementById('toggleDisponibilidadText');
+                        toggleButton.textContent = vianda.disponible ? 'Marcar como No Disponible' : 'Marcar como Disponible';
+                    } else {
+                        adminButtons.classList.add('hidden');
+                        if (vianda.disponible) {
+                            comprarButton.classList.remove('hidden');
+                        } else {
+                            comprarButton.classList.add('hidden');
+                        }
+                    }
+
                     console.log("UI actualizada, mostrando contenido");
                     showContent();
                 } catch (error) {
@@ -195,6 +224,70 @@
                 } finally {
                     comprarButton.disabled = false;
                     comprarButton.innerHTML = '<span>Comprar Ahora</span>';
+                }
+            }
+
+            // Handle toggle disponibilidad
+            window.toggleDisponibilidad = async function() {
+                if (!isAuthenticated()) {
+                    alert('Debes iniciar sesión para realizar esta acción');
+                    window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                    return;
+                }
+
+                const button = document.getElementById('toggleDisponibilidadButton');
+                try {
+                    button.disabled = true;
+                    button.innerHTML = `
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Procesando...
+                    `;
+
+                    await api.toggleDisponibilidad(viandaId);
+                    window.location.reload(); // Recargar la página completa
+                } catch (error) {
+                    console.error('Error al cambiar disponibilidad:', error);
+                    alert('Error al cambiar la disponibilidad: ' + error.message);
+                    button.disabled = false;
+                    button.innerHTML = '<span id="toggleDisponibilidadText">Cambiar Disponibilidad</span>';
+                }
+            }
+
+            // Handle delete vianda
+            window.eliminarVianda = async function() {
+                if (!isAuthenticated()) {
+                    alert('Debes iniciar sesión para realizar esta acción');
+                    window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                    return;
+                }
+
+                if (!confirm('¿Estás seguro de que deseas eliminar esta vianda? Esta acción no se puede deshacer.')) {
+                    return;
+                }
+
+                const button = document.getElementById('eliminarButton');
+                try {
+                    button.disabled = true;
+                    button.innerHTML = `
+                        <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Eliminando...
+                    `;
+
+                    await api.eliminarVianda(viandaId);
+                    alert('Vianda eliminada correctamente');
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Error al eliminar vianda:', error);
+                    alert('Error al eliminar vianda: ' + error.message);
+                } finally {
+                    button.disabled = false;
+                    button.innerHTML = '<span>Eliminar Vianda</span>';
                 }
             }
 
