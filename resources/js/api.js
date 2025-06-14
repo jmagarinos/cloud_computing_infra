@@ -126,17 +126,27 @@ class LunchBoxAPI {
 
     // Cambiar disponibilidad de una vianda
     async toggleDisponibilidad(id) {
-        try {
-            const response = await fetch(`${this.baseUrl}/viandas/${id}/disponibilidad`, {
-                method: 'PUT',
-                headers: this.getAuthHeaders()
-            });
-            
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            return await response.json();
-        } catch (error) {
-            this.handleError(error);
+        const response = await fetch(`${this.baseUrl}/viandas/${id}/disponibilidad`, {
+            method: 'PUT',
+            headers: this.getAuthHeaders()
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Error al cambiar disponibilidad');
         }
+        return await response.json();
+    }
+
+    async eliminarVianda(id) {
+        const response = await fetch(`${this.baseUrl}/viandas/${id}`, {
+            method: 'DELETE',
+            headers: this.getAuthHeaders()
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Error al eliminar la vianda');
+        }
+        return await response.json();
     }
 
     // ENDPOINTS DE COMPRAS
