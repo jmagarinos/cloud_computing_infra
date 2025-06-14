@@ -154,7 +154,7 @@ class LunchBoxAPI {
     // Realizar una compra
     async comprarVianda(compraData) {
         try {
-            const response = await fetch(`${this.baseUrl}/ventas`, {
+            const response = await fetch(`${this.baseUrl}/comprar`, {
                 method: 'POST',
                 headers: this.getAuthHeaders(),
                 body: JSON.stringify(compraData)
