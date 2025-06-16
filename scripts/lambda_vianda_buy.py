@@ -173,9 +173,6 @@ def lambda_handler(event, context):
             cur.execute(insert_query, (vianda_id, user_id, cantidad, fecha_compra))
             compra_id = cur.fetchone()[0]
             
-            # Marcar la vianda como no disponible
-            cur.execute("UPDATE vianda SET disponible = false WHERE id = %s", (vianda_id,))
-            
             # Confirmar transacción
             conn.commit()
             
