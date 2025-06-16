@@ -257,6 +257,7 @@ class LunchBoxAPI {
                 method: 'GET',
                 headers: this.getAuthHeaders()
             });
+            console.log('response:', response);
             
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             return await response.json();

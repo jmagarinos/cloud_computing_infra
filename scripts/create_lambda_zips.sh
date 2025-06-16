@@ -17,6 +17,7 @@ LAMBDAS=(
   lambda_vianda_toggle_disponibilidad
   lambda_vianda_ventas
   lambda_vianda_compras
+  lambda_vianda_list_by_user
 )
 
 for LAMBDA in "${LAMBDAS[@]}"; do

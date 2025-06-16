@@ -274,6 +274,31 @@ resource "aws_lambda_permission" "allow_api_gateway_ventas" {
   source_arn    = "${aws_apigatewayv2_api.vianda_api.execution_arn}/*/*"
 }
 
+# GET /viandas/usuario
+resource "aws_apigatewayv2_route" "get_viandas_by_user" {
+  api_id    = aws_apigatewayv2_api.vianda_api.id
+  route_key = "GET /viandas/usuario"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_list_by_user_integration.id}"
+  authorization_type = "JWT"
+  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+}
+
+resource "aws_apigatewayv2_integration" "lambda_list_by_user_integration" {
+  api_id                 = aws_apigatewayv2_api.vianda_api.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.vianda["vianda_list_by_user"].invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_list_by_user" {
+  statement_id  = "AllowAPIGatewayInvokeListByUser"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.vianda["vianda_list_by_user"].function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.vianda_api.execution_arn}/*/*"
+}
+
 # Stage de la API
 resource "aws_apigatewayv2_stage" "vianda_api_stage" {
   api_id      = aws_apigatewayv2_api.vianda_api.id

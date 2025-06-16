@@ -43,6 +43,10 @@ locals {
       base_name = "lambda_vianda_ventas"
       timeout   = 60
     }
+    vianda_list_by_user = {
+      base_name = "lambda_vianda_list_by_user"
+      timeout   = 60
+    }
   }
 }
 
