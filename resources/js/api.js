@@ -249,6 +249,51 @@ class LunchBoxAPI {
             this.handleError(error);
         }
     }
+
+    // Obtener las viandas publicadas por el usuario autenticado
+    async getMisViandas() {
+        try {
+            const response = await fetch(`${this.baseUrl}/viandas/usuario`, {
+                method: 'GET',
+                headers: this.getAuthHeaders()
+            });
+            
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            this.handleError(error);
+        }
+    }
+
+    // Obtener las compras realizadas por el usuario
+    async getMisCompras() {
+        try {
+            const response = await fetch(`${this.baseUrl}/compras/usuario`, {
+                method: 'GET',
+                headers: this.getAuthHeaders()
+            });
+            console.log('response:', response);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            this.handleError(error);
+        }
+    }
+
+    // Obtener las ventas realizadas por el usuario
+    async getMisVentas() {
+        try {
+            const response = await fetch(`${this.baseUrl}/ventas/usuario`, {
+                method: 'GET',
+                headers: this.getAuthHeaders()
+            });
+            console.log('response:', response);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return await response.json();
+        } catch (error) {
+            this.handleError(error);
+        }
+    }
 }
 
 // Crear una instancia de la API con la URL base de la configuración

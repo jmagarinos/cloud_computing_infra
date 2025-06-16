@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Viandas - LunchBox</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex items-center justify-between">
+                <h1 class="text-3xl font-bold text-blue-600">
+                    <a href="index.html">LunchBox</a>
+                </h1>
+                <div class="header-right flex items-center space-x-4">
+                    <a href="index.html" class="text-gray-600 hover:text-gray-800">Inicio</a>
+                    <a href="mis-compras.html" class="text-gray-600 hover:text-gray-800">Mis Compras</a>
+                    <div id="authButtons">
+                        <!-- El contenido se actualizará dinámicamente con auth.js -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Page Title -->
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-800">Mis Viandas</h2>
+                <p class="text-gray-600 mt-2">Gestiona tus viandas publicadas</p>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-8">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+                <p class="mt-4 text-gray-600">Cargando tus viandas...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorState" class="hidden text-center py-8 text-red-600">
+                <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+                    <svg class="mx-auto h-12 w-12 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-lg font-medium text-red-900">Error al cargar las viandas</h3>
+                    <p id="errorMessage" class="mt-1 text-sm text-red-700"></p>
+                    <div class="mt-4">
+                        <button onclick="loadMyViandas()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                            Reintentar
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Viandas Grid -->
+            <div id="viandasGrid" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Las viandas se cargarán dinámicamente aquí -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden text-center py-12">
+                <div class="bg-white rounded-lg shadow-md p-8">
+                    <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
+                    <h3 class="mt-4 text-lg font-medium text-gray-900">No tienes viandas publicadas</h3>
+                    <p class="mt-2 text-gray-500">Comienza a publicar tus viandas para que otros usuarios puedan comprarlas.</p>
+                    <div class="mt-6">
+                        <a href="write_vianda.html" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                            Publicar Nueva Vianda
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { api } from './js/api.js';
+
+
+        // Función para obtener el ID de usuario de la URL
+        function getUserIdFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('userId');
+            if (!userId) {
+                throw new Error('No se encontró el ID del usuario en la URL');
+            }
+            return userId;
+        }
+
+        // Función para cargar las viandas del usuario
+        async function loadMyViandas() {
+            const loadingState = document.getElementById('loadingState');
+            const errorState = document.getElementById('errorState');
+            const viandasGrid = document.getElementById('viandasGrid');
+            const emptyState = document.getElementById('emptyState');
+
+            try {
+                loadingState.classList.remove('hidden');
+                errorState.classList.add('hidden');
+                viandasGrid.classList.add('hidden');
+                emptyState.classList.add('hidden');
+
+                // Obtener el ID del usuario de la URL
+                const userId = getUserIdFromUrl();
+
+                // Llamar a la API para obtener las viandas del usuario
+                const viandas = await api.getMisViandas();
+                console.log('Viandas obtenidas:', viandas);
+
+                if (viandas && viandas.length > 0) {
+                    // Mostrar las viandas en el grid
+                    viandasGrid.innerHTML = viandas.map(vianda => `
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h3 class="text-xl font-semibold text-gray-800">${vianda.titulo}</h3>
+                            <p class="text-gray-600 mt-2">${vianda.descripcion}</p>
+                            <p class="text-gray-800 mt-2">Precio: $${vianda.precio}</p>
+                            <p class="text-gray-800">Disponible: ${vianda.disponible ? 'Sí' : 'No'}</p>
+                        </div>
+                    `).join('');
+                    viandasGrid.classList.remove('hidden');
+                } else {
+                    emptyState.classList.remove('hidden');
+                }
+                loadingState.classList.add('hidden');
+            } catch (error) {
+                loadingState.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                document.getElementById('errorMessage').textContent = error.message;
+            }
+        }
+
+        // Cargar las viandas cuando la página se cargue
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMyViandas();
+        });
+    </script>
+</body>
+
+</html> 

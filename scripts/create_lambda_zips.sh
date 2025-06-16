@@ -15,6 +15,8 @@ LAMBDAS=(
   lambda_vianda_profile_update
   lambda_cognito_post_confirmation
   lambda_vianda_toggle_disponibilidad
+  lambda_vianda_ventas
+  lambda_vianda_compras
 )
 
 for LAMBDA in "${LAMBDAS[@]}"; do

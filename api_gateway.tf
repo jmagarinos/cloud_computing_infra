@@ -222,6 +222,58 @@ resource "aws_lambda_permission" "allow_api_gateway_toggle_disponibilidad" {
   source_arn    = "${aws_apigatewayv2_api.vianda_api.execution_arn}/*/*"
 }
 
+# GET /compras/usuario
+resource "aws_apigatewayv2_route" "get_compras" {
+  api_id    = aws_apigatewayv2_api.vianda_api.id
+  route_key = "GET /compras/usuario"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_compras_integration.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+}
+
+resource "aws_apigatewayv2_integration" "lambda_compras_integration" {
+  api_id                 = aws_apigatewayv2_api.vianda_api.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.vianda["vianda_compras"].invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_compras" {
+  statement_id  = "AllowAPIGatewayInvokeCompras"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.vianda["vianda_compras"].function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.vianda_api.execution_arn}/*/*"
+}
+
+# GET /ventas/usuario
+resource "aws_apigatewayv2_route" "get_ventas" {
+  api_id    = aws_apigatewayv2_api.vianda_api.id
+  route_key = "GET /ventas/usuario"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_ventas_integration.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+}
+
+resource "aws_apigatewayv2_integration" "lambda_ventas_integration" {
+  api_id                 = aws_apigatewayv2_api.vianda_api.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.vianda["vianda_ventas"].invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_ventas" {
+  statement_id  = "AllowAPIGatewayInvokeVentas"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.vianda["vianda_ventas"].function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.vianda_api.execution_arn}/*/*"
+}
+
 # Stage de la API
 resource "aws_apigatewayv2_stage" "vianda_api_stage" {
   api_id      = aws_apigatewayv2_api.vianda_api.id

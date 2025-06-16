@@ -35,6 +35,14 @@ locals {
       base_name = "lambda_vianda_toggle_disponibilidad"
       timeout   = 60
     }
+    vianda_compras = {
+      base_name = "lambda_vianda_compras"
+      timeout   = 60
+    }
+    vianda_ventas = {
+      base_name = "lambda_vianda_ventas"
+      timeout   = 60
+    }
   }
 }
 

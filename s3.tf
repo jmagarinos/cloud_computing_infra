@@ -176,3 +176,27 @@ resource "aws_s3_object" "write_vianda" {
   content_type = "text/html"
   etag         = filemd5("${path.module}/resources/write_vianda.html")
 }
+
+resource "aws_s3_object" "mis_viandas" {
+  bucket       = aws_s3_bucket.website.id
+  key          = "mis-viandas.html"
+  source       = "${path.module}/resources/mis-viandas.html"
+  content_type = "text/html"
+  etag         = filemd5("${path.module}/resources/mis-viandas.html")
+}
+
+resource "aws_s3_object" "mis_compras" {
+  bucket       = aws_s3_bucket.website.id
+  key          = "mis-compras.html"
+  source       = "${path.module}/resources/mis-compras.html"
+  content_type = "text/html"
+  etag         = filemd5("${path.module}/resources/mis-compras.html")
+}
+
+resource "aws_s3_object" "mis_ventas" {
+  bucket       = aws_s3_bucket.website.id
+  key          = "mis-ventas.html"
+  source       = "${path.module}/resources/mis-ventas.html"
+  content_type = "text/html"
+  etag         = filemd5("${path.module}/resources/mis-ventas.html")
+}
