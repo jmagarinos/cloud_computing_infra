@@ -137,7 +137,9 @@
                             <div class="flex justify-between items-center">
                                 <div>
                                     <p class="text-sm text-gray-500">Comprador: ${venta.comprador.nombre} ${venta.comprador.apellido}</p>
+                                    <p class="text-sm text-gray-500">Email: <a href="mailto:${venta.comprador.mail}" class="text-blue-600 hover:text-blue-800">${venta.comprador.mail}</a></p>
                                     <p class="text-sm text-gray-500">Fecha: ${venta.fecha_compra ? new Date(venta.fecha_compra).toLocaleDateString() : ''}</p>
+                                    <p class="text-sm text-gray-500">Cantidad: ${venta.cantidad}</p>
                                 </div>
                                 <p class="text-lg font-bold text-blue-600">$${venta.precio}</p>
                             </div>

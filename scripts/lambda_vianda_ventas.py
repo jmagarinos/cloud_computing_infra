@@ -80,8 +80,8 @@ def lambda_handler(event, context):
         # Obtener todas las ventas del usuario
         query = """
             SELECT v.id, v.titulo, v.descripcion, v.precio, v.imagen, v.disponible,
-                   p.nombre as comprador_nombre, p.apellido as comprador_apellido,
-                   vta.fecha_venta,
+                   p.nombre as comprador_nombre, p.apellido as comprador_apellido, p.mail as comprador_mail,
+                   vta.fecha_venta, vta.cantidad,
                    CASE WHEN v.fk_dueno = %s THEN true ELSE false END as es_creador
             FROM ventas vta
             JOIN vianda v ON vta.fk_vianda = v.id
@@ -107,10 +107,12 @@ def lambda_handler(event, context):
                 'disponible': venta[5],
                 'comprador': {
                     'nombre': venta[6],
-                    'apellido': venta[7]
+                    'apellido': venta[7],
+                    'mail': venta[8]
                 },
-                'fecha_compra': venta[8].isoformat() if venta[8] else None,
-                'es_creador': venta[9]
+                'fecha_compra': venta[9].isoformat() if venta[9] else None,
+                'cantidad': venta[10],
+                'es_creador': venta[11]
             })
         
         cur.close()
