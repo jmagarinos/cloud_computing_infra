@@ -89,7 +89,7 @@ def lambda_handler(event, context):
         """
         
         print("Ejecutando query de viandas")
-        cur.execute(query, (user_id,))
+        cur.execute(query, (user_id, user_id))
         viandas = cur.fetchall()
         
         # Convertir los resultados a un formato JSON

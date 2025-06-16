@@ -124,8 +124,9 @@
                 const userId = getUserIdFromUrl();
 
                 // Llamar a la API para obtener las viandas del usuario
-                const viandas = await api.getMisViandas();
-                console.log('Viandas obtenidas:', viandas);
+                const response = await api.getMisViandas();
+                console.log('Viandas obtenidas:', response);
+                const viandas = response.viandas;
 
                 if (viandas && viandas.length > 0) {
                     // Mostrar las viandas en el grid
