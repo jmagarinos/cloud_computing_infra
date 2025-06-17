@@ -38,6 +38,18 @@ def lambda_handler(event, context):
             );
         """)
 
+        # Crear tabla suscripciones
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS suscripciones (
+                id SERIAL PRIMARY KEY,
+                comprador_id INTEGER NOT NULL REFERENCES persona(id),
+                cocinero_id INTEGER NOT NULL REFERENCES persona(id),
+                fecha_suscripcion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE (comprador_id, cocinero_id),
+                CHECK (comprador_id <> cocinero_id)
+            );
+        """)
+
         # Crear tabla vianda
         cur.execute("""
             CREATE TABLE IF NOT EXISTS vianda (
