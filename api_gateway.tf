@@ -14,6 +14,57 @@ resource "aws_apigatewayv2_api" "vianda_api" {
   }
 }
 
+resource "aws_apigatewayv2_route" "post_subscription" {
+  api_id    = aws_apigatewayv2_api.vianda_api.id
+  route_key = "POST /usuarios/{cocinero_id}/suscripciones"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_subscription_integration.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+}
+
+resource "aws_apigatewayv2_integration" "lambda_subscription_integration" {
+  api_id                 = aws_apigatewayv2_api.vianda_api.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.vianda["get_subscription"].invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_route" "get_subscription" {
+  api_id    = aws_apigatewayv2_api.vianda_api.id
+  route_key = "GET /usuarios/{cocinero_id}/suscripciones"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_get_subscription_integration.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+}
+
+resource "aws_apigatewayv2_integration" "lambda_get_subscription_integration" {
+  api_id                 = aws_apigatewayv2_api.vianda_api.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.vianda["get_subscription"].invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_route" "delete_subscription" {
+  api_id    = aws_apigatewayv2_api.vianda_api.id
+  route_key = "DELETE /usuarios/{cocinero_id}/suscripciones"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_delete_subscription_integration.id}"
+  
+  authorization_type = "JWT"
+  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+}
+
+resource "aws_apigatewayv2_integration" "lambda_delete_subscription_integration" {
+  api_id                 = aws_apigatewayv2_api.vianda_api.id
+  integration_type       = "AWS_PROXY"
+  integration_method     = "POST"
+  integration_uri        = aws_lambda_function.vianda["get_subscription"].invoke_arn
+  payload_format_version = "2.0"
+}
+
 # POST /viandas
 resource "aws_apigatewayv2_route" "post_viandas" {
   api_id    = aws_apigatewayv2_api.vianda_api.id

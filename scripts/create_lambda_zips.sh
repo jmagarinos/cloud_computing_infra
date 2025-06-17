@@ -5,6 +5,7 @@ mkdir -p temp_lambda
 
 # Lista de lambdas
 LAMBDAS=(
+  lambda_add_suscription
   lambda_vianda_buy
   lambda_rds_init
   lambda_vianda_create
