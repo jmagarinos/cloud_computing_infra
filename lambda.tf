@@ -131,6 +131,42 @@ resource "aws_lambda_function" "rds_init" {
 }
 
 # -----------------------------
+# Lambda Add Suscription
+# -----------------------------
+
+resource "aws_lambda_function" "add_suscription" {
+  function_name = "add_suscription"
+
+  role = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
+
+  runtime  = "python3.12"
+  handler  = "lambda_add_suscription.lambda_handler"
+  filename = "${path.module}/scripts/lambda_add_suscription.zip"
+
+  environment {
+    variables = {
+      DB_HOST     = aws_db_instance.postgres.address
+      DB_NAME     = "lunchbox"
+      DB_USER     = var.db_username
+      DB_PASSWORD = var.db_password
+    }
+  }
+
+  timeout = 60
+
+  vpc_config {
+    subnet_ids         = [for subnet in aws_subnet.private : subnet.id]
+    security_group_ids = [module.sg.security_group_id]
+  }
+
+  layers = [aws_lambda_layer_version.psycopg2_layer.arn]
+
+  depends_on = [
+    aws_db_instance.postgres
+  ]
+}
+
+# -----------------------------
 # Lambda cognito DB writer
 # -----------------------------
 
