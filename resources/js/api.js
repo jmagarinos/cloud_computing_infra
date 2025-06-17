@@ -295,6 +295,62 @@ class LunchBoxAPI {
             this.handleError(error);
         }
     }
+
+    // ENDPOINTS DE SEGUIMIENTO
+
+    // Seguir a un usuario
+    async seguirUsuario(userId) {
+        try {
+            const response = await fetch(`${this.baseUrl}/usuarios/${userId}/seguir`, {
+                method: 'POST',
+                headers: this.getAuthHeaders()
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Error al seguir usuario');
+            }
+            return await response.json();
+        } catch (error) {
+            this.handleError(error);
+        }
+    }
+
+    // Dejar de seguir a un usuario
+    async dejarDeSeguirUsuario(userId) {
+        try {
+            const response = await fetch(`${this.baseUrl}/usuarios/${userId}/seguir`, {
+                method: 'DELETE',
+                headers: this.getAuthHeaders()
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Error al dejar de seguir usuario');
+            }
+            return await response.json();
+        } catch (error) {
+            this.handleError(error);
+        }
+    }
+
+    // Verificar si sigues a un usuario
+    async esSeguido(userId) {
+        try {
+            const response = await fetch(`${this.baseUrl}/usuarios/${userId}/es-seguido`, {
+                method: 'GET',
+                headers: this.getAuthHeaders()
+            });
+            
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Error al verificar seguimiento');
+            }
+            return await response.json();
+        } catch (error) {
+            this.handleError(error);
+        }
+    }
 }
 
 // Crear una instancia de la API con la URL base de la configuración

@@ -104,7 +104,8 @@ def lambda_handler(event, context):
             SELECT v.id, v.titulo, v.descripcion, v.precio, v.imagen, v.disponible,
                    p.nombre as creador_nombre, p.apellido as creador_apellido,
                    p.mail as creador_email,
-                   CASE WHEN v.fk_dueno = %s THEN true ELSE false END as es_creador
+                   CASE WHEN v.fk_dueno = %s THEN true ELSE false END as es_creador,
+                   p.id as creador_id
             FROM vianda v
             JOIN persona p ON v.fk_dueno = p.id
             WHERE v.id = %s
@@ -140,7 +141,8 @@ def lambda_handler(event, context):
             'creador': {
                 'nombre': vianda[6],
                 'apellido': vianda[7],
-                'email': vianda[8]
+                'email': vianda[8],
+                'id': vianda[10],
             },
             'es_creador': vianda[9]
         }

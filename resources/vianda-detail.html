@@ -32,7 +32,9 @@
                             d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                 </a>
-                <a href="index.html"><h1 class="text-3xl font-bold text-blue-600">LunchBox</h1></a>
+                <a href="index.html">
+                    <h1 class="text-3xl font-bold text-blue-600">LunchBox</h1>
+                </a>
                 <div class="w-6"></div> <!-- Spacer for alignment -->
             </nav>
         </div>
@@ -47,7 +49,9 @@
         </div>
 
         <!-- Error State -->
-        <div id="errorState" class="hidden max-w-4xl mx-auto bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <div id="errorState"
+            class="hidden max-w-4xl mx-auto bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+            role="alert">
             <strong class="font-bold">¡Error!</strong>
             <span class="block sm:inline" id="errorMessage"></span>
             <a href="index.html" class="block mt-4 text-center text-red-700 hover:text-red-800 underline">
@@ -63,11 +67,44 @@
                 </div>
                 <div class="p-8 md:w-1/2">
                     <h2 id="viandaTitle" class="text-3xl font-bold text-gray-800 mb-4"></h2>
+
+                    <!-- Creator Information -->
+                    <div id="creatorInfo" class="hidden mb-6 p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div
+                                    class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold mr-3">
+                                    <span id="creatorInitials"></span>
+                                </div>
+                                <div>
+                                    <p class="text-sm text-gray-600">Creado por</p>
+                                    <p id="creatorName" class="font-medium text-gray-800"></p>
+                                </div>
+                            </div>
+                            <button onclick="toggleSeguirUsuario()" id="followButton"
+                                class="px-4 py-2 text-sm font-medium rounded-lg transition duration-200 flex items-center">
+                                <svg fill="#000000" class="h-4 w-4 mr-2" version="1.1" id="Layer_1"
+                                    xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+                                    viewBox="0 0 328 328" xml:space="preserve">
+                                    <g id="XMLID_486_">
+                                        <path id="XMLID_487_"
+                                            d="M115,126.75c34.601,0,62.751-28.149,62.751-62.749C177.751,29.4,149.601,1.25,115,1.25   c-34.601,0-62.75,28.15-62.75,62.751C52.25,98.601,80.399,126.75,115,126.75z M115,31.25c18.059,0,32.751,14.692,32.751,32.751   c0,18.058-14.692,32.749-32.751,32.749c-18.059,0-32.75-14.691-32.75-32.749C82.25,45.942,96.941,31.25,115,31.25z" />
+                                        <path id="XMLID_490_"
+                                            d="M228.607,181.144c-5.858-5.858-15.355-5.859-21.213-0.001c-5.858,5.857-5.858,15.355-0.001,21.213   l19.393,19.395l-19.393,19.392c-5.858,5.857-5.858,15.355-0.001,21.213c2.929,2.929,6.768,4.394,10.607,4.394   c3.838,0,7.678-1.464,10.607-4.393l30-29.998c2.813-2.813,4.393-6.628,4.393-10.606c0-3.978-1.58-7.793-4.393-10.607   L228.607,181.144z" />
+                                        <path id="XMLID_491_"
+                                            d="M223,116.75c-34.488,0-65.144,16.716-84.297,42.47c-7.763-1.628-15.695-2.47-23.703-2.47   c-63.411,0-115,51.589-115,115c0,8.284,6.716,15,15,15h125.596c19.247,24.348,49.031,40,82.404,40c57.897,0,105-47.103,105-105   S280.897,116.75,223,116.75z M31.325,256.75c7.106-39.739,41.923-70,83.675-70c2.965,0,5.914,0.165,8.841,0.467   c-3.779,10.82-5.841,22.44-5.841,34.533c0,12.268,2.122,24.047,6.006,35H31.325z M223,296.75c-41.355,0-75-33.645-75-75   s33.645-75,75-75s75,33.645,75,75S264.355,296.75,223,296.75z" />
+                                    </g>
+                                </svg>
+                                <span id="followText">Seguir</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="text-2xl font-bold text-blue-600 mb-6">
                         $<span id="viandaPrecio"></span>
                     </div>
                     <p id="viandaDescripcion" class="text-gray-600 mb-8 leading-relaxed"></p>
-                    
+
                     <!-- Botones de administración (solo para el creador) -->
                     <div id="adminButtons" class="hidden mb-6 space-y-4">
                         <button onclick="toggleDisponibilidad()" id="toggleDisponibilidadButton"
@@ -79,7 +116,7 @@
                             <span>Eliminar Vianda</span>
                         </button>
                     </div>
-                    
+
                     <!-- Cantidad Selector -->
                     <div id="cantidadSelector" class="mb-6">
                         <label for="cantidad" class="block text-sm font-medium text-gray-700 mb-2">Cantidad</label>
@@ -100,7 +137,8 @@
 
                     <!-- Mensaje de no disponible -->
                     <div id="noDisponibleMessage" class="hidden mb-6">
-                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                            role="alert">
                             <strong class="font-bold">No disponible</strong>
                             <span class="block sm:inline"> Esta vianda no está disponible en este momento.</span>
                         </div>
@@ -137,6 +175,9 @@
             const cantidadSelector = document.getElementById('cantidadSelector');
             const noDisponibleMessage = document.getElementById('noDisponibleMessage');
 
+            // Global variable to store vianda data
+            let currentVianda = null;
+
             function showError(message) {
                 loadingState.classList.add('hidden');
                 viandaContent.classList.add('hidden');
@@ -164,12 +205,34 @@
                     const vianda = await api.getVianda(viandaId);
                     console.log("Respuesta recibida:", vianda);
 
+                    // Store vianda data globally
+                    currentVianda = vianda;
+
                     // Update the UI with vianda details
                     document.getElementById('viandaImage').src = vianda.imagen || `https://placehold.co/800x600?text=${encodeURIComponent(vianda.titulo)}`;
                     document.getElementById('viandaImage').alt = vianda.titulo;
                     document.getElementById('viandaTitle').textContent = vianda.titulo;
                     document.getElementById('viandaPrecio').textContent = vianda.precio.toFixed(2);
                     document.getElementById('viandaDescripcion').textContent = vianda.descripcion;
+
+                    // Show creator information if not the creator
+                    const creatorInfo = document.getElementById('creatorInfo');
+                    if (!vianda.es_creador && vianda.creador) {
+                        creatorInfo.classList.remove('hidden');
+                        document.getElementById('creatorName').textContent = vianda.creador.nombre || 'Usuario';
+
+                        // Set creator initials
+                        const initials = (vianda.creador.nombre || 'U').split(' ')
+                            .map(word => word.charAt(0).toUpperCase())
+                            .join('')
+                            .substring(0, 2);
+                        document.getElementById('creatorInitials').textContent = initials;
+
+                        // Check if user is already following this creator
+                        await updateFollowButton();
+                    } else {
+                        creatorInfo.classList.add('hidden');
+                    }
 
                     // Mostrar/ocultar botones de administración
                     const adminButtons = document.getElementById('adminButtons');
@@ -202,8 +265,80 @@
                 }
             }
 
+            // Update follow button state
+            async function updateFollowButton() {
+                if (!currentVianda || !currentVianda.creador || !isAuthenticated()) {
+                    return;
+                }
+
+                try {
+                    const result = await api.esSeguido(currentVianda.creador.id);
+                    const followButton = document.getElementById('followButton');
+                    const followText = document.getElementById('followText');
+                    const followIcon = document.getElementById('followIcon');
+
+                    if (result.es_seguido) {
+                        followButton.className = 'px-4 py-2 text-sm font-medium rounded-lg transition duration-200 flex items-center bg-green-100 text-green-700 hover:bg-green-200';
+                        followText.textContent = 'Siguiendo';
+                        followIcon.innerHTML = `
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        `;
+                    } else {
+                        followButton.className = 'px-4 py-2 text-sm font-medium rounded-lg transition duration-200 flex items-center bg-blue-100 text-blue-700 hover:bg-blue-200';
+                        followText.textContent = 'Seguir';
+                        followIcon.innerHTML = `
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-2.239" />
+                        `;
+                    }
+                } catch (error) {
+                    console.error('Error checking follow status:', error);
+                }
+            }
+
+            // Handle follow/unfollow toggle
+            window.toggleSeguirUsuario = async function () {
+                if (!isAuthenticated()) {
+                    alert('Debes iniciar sesión para seguir usuarios');
+                    window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+                    return;
+                }
+
+                if (!currentVianda || !currentVianda.creador) {
+                    alert('Error: No se pudo obtener información del creador');
+                    return;
+                }
+
+                const followButton = document.getElementById('followButton');
+                const followText = document.getElementById('followText');
+
+                try {
+                    followButton.disabled = true;
+                    const originalText = followText.textContent;
+                    followText.textContent = 'Procesando...';
+
+                    // Check current follow status and toggle
+                    const result = await api.esSeguido(currentVianda.creador.email);
+
+                    if (result.es_seguido) {
+                        await api.dejarDeSeguirUsuario(currentVianda.creador.email);
+                    } else {
+                        await api.seguirUsuario(currentVianda.creador.email);
+                    }
+
+                    // Update button state
+                    await updateFollowButton();
+
+                } catch (error) {
+                    console.error('Error toggling follow status:', error);
+                    alert('Error al cambiar el estado de seguimiento: ' + error.message);
+                    followText.textContent = originalText;
+                } finally {
+                    followButton.disabled = false;
+                }
+            }
+
             // Handle purchase button click
-            window.comprarVianda = async function() {
+            window.comprarVianda = async function () {
                 if (!isAuthenticated()) {
                     alert('Debes iniciar sesión para realizar una compra');
                     window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
@@ -244,7 +379,7 @@
             }
 
             // Handle toggle disponibilidad
-            window.toggleDisponibilidad = async function() {
+            window.toggleDisponibilidad = async function () {
                 if (!isAuthenticated()) {
                     alert('Debes iniciar sesión para realizar esta acción');
                     window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
@@ -273,7 +408,7 @@
             }
 
             // Handle delete vianda
-            window.eliminarVianda = async function() {
+            window.eliminarVianda = async function () {
                 if (!isAuthenticated()) {
                     alert('Debes iniciar sesión para realizar esta acción');
                     window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
@@ -308,11 +443,11 @@
             }
 
             // Cantidad controls
-            window.incrementarCantidad = function() {
+            window.incrementarCantidad = function () {
                 cantidadInput.value = parseInt(cantidadInput.value) + 1;
             }
 
-            window.decrementarCantidad = function() {
+            window.decrementarCantidad = function () {
                 const newValue = parseInt(cantidadInput.value) - 1;
                 if (newValue >= 1) {
                     cantidadInput.value = newValue;
@@ -328,4 +463,4 @@
     </script>
 </body>
 
-</html> 
+</html>
