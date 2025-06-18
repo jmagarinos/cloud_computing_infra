@@ -1,6 +1,7 @@
 import json
 import os
 import psycopg2
+import boto3
 
 def lambda_handler(event, context):
     try:
@@ -20,7 +21,7 @@ def lambda_handler(event, context):
         claims = jwt_info.get('claims', {})
         print(f"Claims: {json.dumps(claims, indent=2)}")
         
-        # Extract user information from claims
+        # Extraer información del usuario
         cognito_sub = claims.get('sub')  # Cognito user ID
         username = claims.get('username')
         email = claims.get('email')
@@ -28,7 +29,6 @@ def lambda_handler(event, context):
         print(f"Cognito Sub: {cognito_sub}")
         print(f"Username: {username}")
         print(f"Email: {email}")
-        
         print(f"Email autenticado: {email}")
 
         if not cognito_sub:
@@ -71,7 +71,7 @@ def lambda_handler(event, context):
         
         cur = conn.cursor()
         
-        # Buscar el ID de la persona por email
+        # Buscar el ID de la persona por sub
         print(f"Buscando persona con cognito_sub: {cognito_sub}")
         cur.execute("SELECT id FROM persona WHERE cognito_sub = %s", (cognito_sub,))
         result = cur.fetchone()
@@ -107,13 +107,32 @@ def lambda_handler(event, context):
         # Eliminar la vianda
         print("Eliminando vianda")
         cur.execute("DELETE FROM vianda WHERE id = %s", (vianda_id,))
-        
         conn.commit()
         cur.close()
         conn.close()
         
         print(f"Vianda {vianda_id} eliminada correctamente")
-        
+
+        # Publicar evento en SNS
+        try:
+            topic_arn = os.environ.get("SNS_EVENTOS_ARN")
+            if not topic_arn:
+                raise Exception("La variable de entorno SNS_EVENTOS_ARN no está definida")
+
+            print("Publicando evento en SNS")
+            sns = boto3.client("sns")
+            sns.publish(
+                TopicArn=topic_arn,
+                Message=json.dumps({
+                    "tipo_evento": "eliminacion_vianda",
+                    "usuario_id": persona_id,
+                    "vianda_id": vianda_id
+                })
+            )
+            print("Evento de eliminación publicado en SNS exitosamente")
+        except Exception as e:
+            print("Error al publicar evento en SNS:", str(e))
+
         return {
             'statusCode': 200,
             'body': json.dumps({

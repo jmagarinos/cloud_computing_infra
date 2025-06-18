@@ -3,18 +3,6 @@
 # -----------------------------
 locals {
   vianda_lambdas = {
-    add_subscription = {
-      base_name = "lambda_add_suscription"
-      timeout   = 60
-    }
-    delete_subscription = {
-      base_name = "lambda_delete_suscription"
-      timeout   = 60
-    }
-    get_subscription = {
-      base_name = "lambda_get_suscription"
-      timeout   = 60
-    }
     vianda_writer = {
       base_name = "lambda_vianda_create"
       timeout   = 60
@@ -79,10 +67,11 @@ resource "aws_lambda_function" "vianda" {
 
   environment {
     variables = {
-      DB_HOST     = aws_db_instance.postgres.address
-      DB_NAME     = "lunchbox"
-      DB_USER     = var.db_username
-      DB_PASSWORD = var.db_password
+      DB_HOST         = aws_db_instance.postgres.address
+      DB_NAME         = "lunchbox"
+      DB_USER         = var.db_username
+      DB_PASSWORD     = var.db_password
+      SNS_EVENTOS_ARN = aws_sns_topic.eventos_usuario.arn
     }
   }
 
@@ -92,8 +81,12 @@ resource "aws_lambda_function" "vianda" {
     subnet_ids         = [for subnet in aws_subnet.private : subnet.id]
     security_group_ids = [module.sg.security_group_id]
   }
-  depends_on = [aws_cognito_user_pool.main]
-  layers     = [aws_lambda_layer_version.psycopg2_layer.arn]
+  depends_on = [
+    aws_cognito_user_pool.main,
+    aws_sns_topic.eventos_usuario
+  ]
+
+  layers = [aws_lambda_layer_version.psycopg2_layer.arn]
 }
 
 # -----------------------------
@@ -211,3 +204,61 @@ resource "aws_lambda_layer_version" "psycopg2_layer" {
 # }
 
 data "aws_caller_identity" "current" {}
+
+# -----------------------------
+# Lambda para guardar evento en DynamoDB
+# -----------------------------
+
+resource "aws_lambda_function" "guardar_evento" {
+  function_name = "guardar_evento_dynamo"
+  role          = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
+  runtime       = "python3.12"
+  handler       = "lambda_guardar_evento.lambda_handler"
+  filename      = "${path.module}/scripts/lambda_guardar_evento.zip"
+
+  environment {
+    variables = {
+      DYNAMO_TABLE = aws_dynamodb_table.eventos_usuario.name
+    }
+  }
+
+  timeout = 30
+
+  depends_on = [aws_dynamodb_table.eventos_usuario]
+}
+
+# -----------------------------
+# Permiso para que SNS invoque la Lambda
+# -----------------------------
+
+resource "aws_lambda_permission" "allow_sns_to_invoke" {
+  statement_id  = "AllowExecutionFromSNS"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.guardar_evento.function_name
+  principal     = "sns.amazonaws.com"
+  source_arn    = aws_sns_topic.eventos_usuario.arn
+}
+
+# -----------------------------
+# Suscripción SNS → Lambda
+# -----------------------------
+
+resource "aws_sns_topic_subscription" "sns_to_lambda" {
+  topic_arn = aws_sns_topic.eventos_usuario.arn
+  protocol  = "lambda"
+  endpoint  = aws_lambda_function.guardar_evento.arn
+}
+
+resource "aws_vpc_endpoint" "sns" {
+  vpc_id              = module.vpc.vpc_id
+  service_name        = "com.amazonaws.${var.aws_region}.sns"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+
+  subnet_ids         = [for subnet in aws_subnet.private : subnet.id]
+  security_group_ids = [module.sg.security_group_id]
+
+  tags = {
+    Name = "sns-endpoint"
+  }
+}

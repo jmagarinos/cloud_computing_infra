@@ -5,7 +5,7 @@ resource "aws_apigatewayv2_api" "vianda_api" {
   protocol_type = "HTTP"
 
   cors_configuration {
-    allow_credentials = true 
+    allow_credentials = true
     allow_headers     = ["*"]
     allow_methods     = ["*"]
     allow_origins     = ["http://${aws_s3_bucket_website_configuration.website_config.website_endpoint}"]
@@ -14,65 +14,14 @@ resource "aws_apigatewayv2_api" "vianda_api" {
   }
 }
 
-resource "aws_apigatewayv2_route" "post_subscription" {
-  api_id    = aws_apigatewayv2_api.vianda_api.id
-  route_key = "POST /usuarios/{cocinero_id}/suscripciones"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda_subscription_integration.id}"
-  
-  authorization_type = "JWT"
-  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
-}
-
-resource "aws_apigatewayv2_integration" "lambda_subscription_integration" {
-  api_id                 = aws_apigatewayv2_api.vianda_api.id
-  integration_type       = "AWS_PROXY"
-  integration_method     = "POST"
-  integration_uri        = aws_lambda_function.vianda["get_subscription"].invoke_arn
-  payload_format_version = "2.0"
-}
-
-resource "aws_apigatewayv2_route" "get_subscription" {
-  api_id    = aws_apigatewayv2_api.vianda_api.id
-  route_key = "GET /usuarios/{cocinero_id}/suscripciones"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda_get_subscription_integration.id}"
-  
-  authorization_type = "JWT"
-  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
-}
-
-resource "aws_apigatewayv2_integration" "lambda_get_subscription_integration" {
-  api_id                 = aws_apigatewayv2_api.vianda_api.id
-  integration_type       = "AWS_PROXY"
-  integration_method     = "POST"
-  integration_uri        = aws_lambda_function.vianda["get_subscription"].invoke_arn
-  payload_format_version = "2.0"
-}
-
-resource "aws_apigatewayv2_route" "delete_subscription" {
-  api_id    = aws_apigatewayv2_api.vianda_api.id
-  route_key = "DELETE /usuarios/{cocinero_id}/suscripciones"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda_delete_subscription_integration.id}"
-  
-  authorization_type = "JWT"
-  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
-}
-
-resource "aws_apigatewayv2_integration" "lambda_delete_subscription_integration" {
-  api_id                 = aws_apigatewayv2_api.vianda_api.id
-  integration_type       = "AWS_PROXY"
-  integration_method     = "POST"
-  integration_uri        = aws_lambda_function.vianda["get_subscription"].invoke_arn
-  payload_format_version = "2.0"
-}
-
 # POST /viandas
 resource "aws_apigatewayv2_route" "post_viandas" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "POST /viandas"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
-  
+
   authorization_type = "JWT"
-  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_integration" {
@@ -96,9 +45,9 @@ resource "aws_apigatewayv2_route" "get_viandas" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "GET /viandas"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_list_integration.id}"
-  
+
   authorization_type = "JWT"
-  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_list_integration" {
@@ -122,9 +71,9 @@ resource "aws_apigatewayv2_route" "post_comprar" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "POST /comprar"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_buy_integration.id}"
-  
+
   authorization_type = "JWT"
-  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_buy_integration" {
@@ -148,9 +97,9 @@ resource "aws_apigatewayv2_route" "delete_vianda" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "DELETE /viandas/{id}"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_delete_integration.id}"
-  
+
   authorization_type = "JWT"
-  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_delete_integration" {
@@ -174,9 +123,9 @@ resource "aws_apigatewayv2_route" "get_vianda" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "GET /viandas/{id}"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_get_integration.id}"
-  
+
   authorization_type = "JWT"
-  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_get_integration" {
@@ -200,9 +149,9 @@ resource "aws_apigatewayv2_route" "get_perfil" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "GET /perfil"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_profile_integration.id}"
-  
+
   authorization_type = "JWT"
-  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_profile_integration" {
@@ -226,9 +175,9 @@ resource "aws_apigatewayv2_route" "put_perfil" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "PUT /perfil"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_profile_update_integration.id}"
-  
+
   authorization_type = "JWT"
-  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_profile_update_integration" {
@@ -252,9 +201,9 @@ resource "aws_apigatewayv2_route" "toggle_disponibilidad" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "PUT /viandas/{id}/disponibilidad"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_toggle_disponibilidad_integration.id}"
-  
+
   authorization_type = "JWT"
-  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_toggle_disponibilidad_integration" {
@@ -278,9 +227,9 @@ resource "aws_apigatewayv2_route" "get_compras" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "GET /compras/usuario"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_compras_integration.id}"
-  
+
   authorization_type = "JWT"
-  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_compras_integration" {
@@ -304,9 +253,9 @@ resource "aws_apigatewayv2_route" "get_ventas" {
   api_id    = aws_apigatewayv2_api.vianda_api.id
   route_key = "GET /ventas/usuario"
   target    = "integrations/${aws_apigatewayv2_integration.lambda_ventas_integration.id}"
-  
+
   authorization_type = "JWT"
-  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_ventas_integration" {
@@ -327,11 +276,11 @@ resource "aws_lambda_permission" "allow_api_gateway_ventas" {
 
 # GET /viandas/usuario
 resource "aws_apigatewayv2_route" "get_viandas_by_user" {
-  api_id    = aws_apigatewayv2_api.vianda_api.id
-  route_key = "GET /viandas/usuario"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda_list_by_user_integration.id}"
+  api_id             = aws_apigatewayv2_api.vianda_api.id
+  route_key          = "GET /viandas/usuario"
+  target             = "integrations/${aws_apigatewayv2_integration.lambda_list_by_user_integration.id}"
   authorization_type = "JWT"
-  authorizer_id     = aws_apigatewayv2_authorizer.cognito_authorizer.id
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_authorizer.id
 }
 
 resource "aws_apigatewayv2_integration" "lambda_list_by_user_integration" {
